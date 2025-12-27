@@ -1,0 +1,282 @@
+import User from '../models/User.js';
+import StudentProfile from '../models/StudentProfile.js';
+import EnrolledCourse from '../models/EnrolledCourse.js';
+import Transaction from '../models/Transaction.js';
+
+// --- Student Profile Controllers ---
+
+export const getProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await User.findById(userId);
+        let profile = await StudentProfile.findOne({ userId });
+
+        const baseProfile = profile ? profile.toObject() : {
+            personal: {},
+            education: {},
+            academic: {}
+        };
+
+        res.json({
+            ...baseProfile,
+            fullName: user?.fullName,
+            email: user?.email,
+            userType: user?.userType,
+            coins: user?.coins || 0
+        });
+    } catch (error) {
+        console.error("Error fetching profile:", error);
+        res.status(500).json({ message: "Server error fetching profile" });
+    }
+};
+
+export const updateProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const updates = req.body;
+        const updateQuery = {};
+
+        // Helper to construct dot notation for MongoDB updates
+        // This ensures we merge data instead of replacing entire nested objects
+        const buildDotNotation = (obj, prefix = '') => {
+            Object.keys(obj).forEach(key => {
+                if (key === 'personal' || key === 'education' || key === 'academic' || key === 'settings') {
+                    // For top-level known sections, iterate their keys
+                    if (typeof obj[key] === 'object' && obj[key] !== null) {
+                        Object.keys(obj[key]).forEach(subKey => {
+                            // Special handling for settings to avoid going too deep if not needed, 
+                            // ignoring purely deep merge for now unless necessary. 
+                            // Safe to just do section.field
+                            updateQuery[`${key}.${subKey}`] = obj[key][subKey];
+                        });
+                    }
+                }
+            });
+        };
+
+        // If simple structure is passed (e.g. from StudentProfile.jsx sending full object), this works too.
+        // But let's be explicit based on our schema sections.
+
+        ['personal', 'education', 'academic', 'settings'].forEach(section => {
+            if (updates[section]) {
+                Object.keys(updates[section]).forEach(key => {
+                    updateQuery[`${section}.${key}`] = updates[section][key];
+                });
+            }
+        });
+
+        // Upsert: update if exists, create if not
+        const profile = await StudentProfile.findOneAndUpdate(
+            { userId },
+            { $set: updateQuery },
+            { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
+
+        res.json(profile);
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        res.status(500).json({ message: "Server error updating profile" });
+    }
+};
+
+// --- Enrolled Courses Controllers ---
+
+export const getEnrolledCourses = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const courses = await EnrolledCourse.find({ userId });
+        res.json(courses);
+    } catch (error) {
+        console.error("Error fetching courses:", error);
+        res.status(500).json({ message: "Server error fetching courses" });
+    }
+};
+
+export const enrollInCourse = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const courseData = req.body;
+
+        // Check if already enrolled
+        const existing = await EnrolledCourse.findOne({ userId, courseId: courseData.courseId });
+        if (existing) {
+            return res.status(400).json({ message: "Already enrolled in this course" });
+        }
+
+        const newEnrollment = new EnrolledCourse({
+            userId,
+            ...courseData
+        });
+
+        await newEnrollment.save();
+        res.status(201).json(newEnrollment);
+    } catch (error) {
+        console.error("Error enrolling in course:", error);
+        res.status(500).json({ message: "Server error enrolling in course" });
+    }
+};
+
+export const updateCourseProgress = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { courseId } = req.params;
+        const updates = req.body; // Expecting fields to update like progress, completedLessons, etc.
+
+        const course = await EnrolledCourse.findOneAndUpdate(
+            { userId, courseId },
+            { $set: updates, lastActive: Date.now() },
+            { new: true }
+        );
+
+        if (!course) {
+            return res.status(404).json({ message: "Course enrollment not found" });
+        }
+
+        res.json(course);
+    } catch (error) {
+        console.error("Error updating course progress:", error);
+        res.status(500).json({ message: "Server error updating progress" });
+    }
+};
+
+// Initialize default courses for demo purposes (Optional helper)
+export const initializeDemoCourses = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        // Check if user has courses
+        const count = await EnrolledCourse.countDocuments({ userId });
+        if (count > 0) {
+            return res.json({ message: "User already has courses" });
+        }
+
+        const initialEnrolled = [
+            {
+                courseId: "C-ROB-101",
+                title: "Advanced Robotics & AI",
+                instructor: "Dr. Sarah Chen",
+                progress: 78,
+                completedLessons: 18,
+                totalLessons: 24,
+                testsCompleted: 3,
+                testsTotal: 4,
+                certificate: false,
+                milestones: [
+                    { id: 1, title: "Intro & Tools", done: true },
+                    { id: 2, title: "Kinematics", done: true },
+                    { id: 3, title: "Perception", done: true },
+                    { id: 4, title: "Neural Control", done: false }
+                ],
+                achievements: ["Top 10% - Robotics Challenge"],
+                thumbnailEmoji: "🤖"
+            },
+            {
+                courseId: "C-ML-201",
+                title: "Machine Learning Fundamentals",
+                instructor: "Prof. Alex Rodriguez",
+                progress: 45,
+                completedLessons: 9,
+                totalLessons: 20,
+                testsCompleted: 1,
+                testsTotal: 3,
+                certificate: false,
+                milestones: [
+                    { id: 1, title: "Python Refresher", done: true },
+                    { id: 2, title: "Supervised Learning", done: false },
+                    { id: 3, title: "Unsupervised Learning", done: false }
+                ],
+                achievements: [],
+                thumbnailEmoji: "🧠"
+            },
+            {
+                courseId: "C-PY-001",
+                title: "Python for Robotics",
+                instructor: "Dr. James Wilson",
+                progress: 100,
+                completedLessons: 12,
+                totalLessons: 12,
+                testsCompleted: 2,
+                testsTotal: 2,
+                certificate: true,
+                grade: "A+",
+                milestones: [
+                    { id: 1, title: "Syntax & Basics", done: true },
+                    { id: 2, title: "Package Ecosystem", done: true },
+                    { id: 3, title: "Project: Robot CLI", done: true }
+                ],
+                achievements: ["Completed Python for Robotics"],
+                thumbnailEmoji: "🐍"
+            }
+        ];
+
+        const coursesToInsert = initialEnrolled.map(c => ({ ...c, userId }));
+        const insertedCourses = await EnrolledCourse.insertMany(coursesToInsert);
+
+        res.json({
+            message: "Demo courses initialized",
+            count: insertedCourses.length,
+            courses: insertedCourses
+        });
+    } catch (error) {
+        console.error("Error initializing demo courses:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+}
+export const deleteAccount = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Delete associated data
+        await StudentProfile.deleteOne({ userId });
+        await EnrolledCourse.deleteMany({ userId });
+
+        // Delete the user record
+        const User = (await import('../models/User.js')).default;
+        await User.findByIdAndDelete(userId);
+
+        res.json({ message: "Account deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting account:", error);
+        res.status(500).json({ message: "Server error deleting account" });
+    }
+};
+
+export const addCoins = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { coins, amount, paymentMethod, packageId } = req.body;
+
+        if (!coins || coins <= 0) {
+            return res.status(400).json({ message: "Invalid coin amount" });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // 1. Update User Balance
+        user.coins = (user.coins || 0) + coins;
+        await user.save();
+
+        // 2. Create Transaction Log
+        const transaction = new Transaction({
+            userId,
+            type: "credit",
+            amount: amount || 0, // Store actual money paid
+            coins,
+            paymentMethod: paymentMethod || "unknown",
+            packageId: packageId || "custom",
+            status: "completed"
+        });
+        await transaction.save();
+
+        res.json({
+            message: "Coins added successfully and transaction logged",
+            totalCoins: user.coins,
+            transactionId: transaction._id
+        });
+    } catch (error) {
+        console.error("Error adding coins & logging transaction:", error);
+        res.status(500).json({ message: "Server error updating balance" });
+    }
+};
