@@ -14,6 +14,10 @@ dist-ssr
 
 .env
 
+# OTP files (no longer used, stored in DB only)
+otp.txt
+otp_reset.txt
+
 
 # Editor directories and files
 .vscode/*

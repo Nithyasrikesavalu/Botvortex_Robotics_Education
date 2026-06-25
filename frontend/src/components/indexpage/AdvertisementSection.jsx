@@ -1,3 +1,4 @@
+import { API_URL } from "../../config/api";
 import React, { useState } from 'react';
 
 const AdvertisementSection = () => {
@@ -20,7 +21,7 @@ const AdvertisementSection = () => {
   };
 
   const handleExploreProgram = () => {
-    // Redirect to programs page or open program details
+    // Redirect to dedicated programs page
     window.location.href = '/programs';
   };
 
@@ -53,7 +54,7 @@ const AdvertisementSection = () => {
 
     // Actual API call to Backend
     try {
-      const response = await fetch("http://localhost:5000/api/programs/request-details", {
+      const response = await fetch(`${API_URL}/programs/request-details`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

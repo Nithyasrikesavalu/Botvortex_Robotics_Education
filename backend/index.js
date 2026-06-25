@@ -7,11 +7,22 @@ import studentRoutes from "./routes/studentRoutes.js";
 import contactRoutes from "./routes/contactRoutes.js";
 import programRoutes from "./routes/programRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
+import instructorRoutes from "./routes/instructorRoutes.js";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use((req, res, next) => {
+  console.log(`📡 ${req.method} ${req.url}`);
+  if (req.body && Object.keys(req.body).length > 0) {
+    const bodyCopy = { ...req.body };
+    if (bodyCopy.password) bodyCopy.password = "********";
+    console.log("📦 Body:", bodyCopy);
+  }
+  next();
+});
+app.use("/uploads", express.static("uploads"));
 
 // Connect DB
 connectDB();
@@ -22,6 +33,7 @@ app.use("/api/student", studentRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/programs", programRoutes);
 app.use("/api/courses", courseRoutes);
+app.use("/api/instructor", instructorRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

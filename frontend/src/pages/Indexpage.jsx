@@ -11,10 +11,6 @@ import Footer from '../components/indexpage/Footer'
 import Navbar from '../components/indexpage/Navbar'
 
 
-
-
-
-
 const Indexpage = () => {
   return (
     <>

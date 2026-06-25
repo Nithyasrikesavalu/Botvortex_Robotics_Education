@@ -1,28 +1,28 @@
 import React from "react";
-import { Coins, TrendingUp, Users, Calendar, Download, Filter, Award, Gift, Crown, Zap } from "lucide-react";
+import { Coins, TrendingUp, Users, Calendar, Download, Filter, Award, Gift, Crown, Zap, DollarSign } from "lucide-react";
 
 const EarningsContent = ({ data }) => {
-  const { stats, earnings } = data;
+  const { stats = { totalStudents: 0, totalCourses: 0, totalEarnings: 0 }, earnings = [], students = [] } = data;
 
-  // Enhanced earnings data in COINS
-  const earningsData = [
-    { month: "Jan", coins: 3200, students: 45, courses: 3 },
-    { month: "Feb", coins: 2800, students: 38, courses: 2 },
-    { month: "Mar", coins: 4000, students: 62, courses: 4 },
-    { month: "Apr", coins: 3780, students: 58, courses: 3 },
-    { month: "May", coins: 5900, students: 89, courses: 5 },
-    { month: "Jun", coins: 4580, students: 67, courses: 4 },
-    { month: "Jul", coins: 5200, students: 74, courses: 5 },
-    { month: "Aug", coins: 6100, students: 92, courses: 6 }
-  ];
+  // Use real students as recent transactions
+  const recentTransactions = students.map((s, idx) => ({
+    id: s.id || idx,
+    student: s.name,
+    course: s.course,
+    coins: stats.totalEarnings / stats.totalStudents || 0, // Approximation or actual price if we had it per enrollment
+    date: s.joinDate ? new Date(s.joinDate).toLocaleDateString() : "Recent",
+    type: "course_sale",
+    icon: "🎓"
+  }));
 
-  const recentTransactions = [
-    { id: 1, student: "Sarah Johnson", course: "Advanced React", coins: 149, date: "2024-08-15", type: "course_sale", icon: "🎓" },
-    { id: 2, student: "Mike Chen", course: "Node.js Backend", coins: 129, date: "2024-08-14", type: "course_sale", icon: "🎓" },
-    { id: 3, student: "Emma Davis", course: "UI/UX Design", coins: 99, date: "2024-08-13", type: "course_sale", icon: "🎓" },
-    { id: 4, student: "Alex Rodriguez", course: "Advanced React", coins: 149, date: "2024-08-12", type: "course_sale", icon: "🎓" },
-    { id: 5, student: "Lisa Wang", course: "Python Mastery", coins: 45, date: "2024-08-11", type: "bonus", icon: "⭐" },
-    { id: 6, student: "John Smith", course: "Student Referral", coins: 100, date: "2024-08-10", type: "referral", icon: "👥" }
+  // If no students yet, show empty or a few placeholders
+  const earningsData = earnings.length > 0 ? earnings : [
+    { month: "Jan", coins: 0, students: 0 },
+    { month: "Feb", coins: 0, students: 0 },
+    { month: "Mar", coins: 0, students: 0 },
+    { month: "Apr", coins: 0, students: 0 },
+    { month: "May", coins: 0, students: 0 },
+    { month: "Jun", coins: 0, students: 0 }
   ];
 
   const rewardsMilestones = [
@@ -38,7 +38,7 @@ const EarningsContent = ({ data }) => {
     const currentMonth = earningsData[earningsData.length - 1];
     const previousMonth = earningsData[earningsData.length - 2];
     const growthPercentage = previousMonth ? ((currentMonth.coins - previousMonth.coins) / previousMonth.coins * 100).toFixed(1) : 0;
-    
+
     const totalCoins = earningsData.reduce((sum, month) => sum + month.coins, 0);
     const averageMonthly = Math.round(totalCoins / earningsData.length);
     const totalStudents = earningsData.reduce((sum, month) => sum + month.students, 0);
@@ -77,17 +77,17 @@ const EarningsContent = ({ data }) => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Rewards & Coins</h2>
-          <p className="text-gray-600 mt-1">Track your reward coins and achievements</p>
+          <h2 className="text-2xl font-bold text-gray-900">Revenue & Earnings</h2>
+          <p className="text-gray-600 mt-1">Track your financial growth and rewards</p>
         </div>
         <div className="flex gap-3">
           <button className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
             <Filter className="w-4 h-4" />
             Filter
           </button>
-          <button className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all">
-            <Gift className="w-4 h-4" />
-            Redeem Coins
+          <button className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all">
+            <DollarSign className="w-4 h-4" />
+            Withdraw Funds
           </button>
         </div>
       </div>
@@ -97,24 +97,24 @@ const EarningsContent = ({ data }) => {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold text-gray-900">{statsData.totalCoins.toLocaleString()}</p>
-              <p className="text-gray-600 text-sm">Total Coins Earned</p>
+              <p className="text-2xl font-bold text-gray-900">₹{statsData.totalCoins.toLocaleString()}</p>
+              <p className="text-gray-600 text-sm">Total Revenue</p>
             </div>
-            <div className="p-3 bg-yellow-100 rounded-lg">
-              <Coins className="w-6 h-6 text-yellow-600" />
+            <div className="p-3 bg-purple-100 rounded-lg">
+              <DollarSign className="w-6 h-6 text-purple-600" />
             </div>
           </div>
           <div className="flex items-center gap-1 mt-2">
-            <Award className="w-4 h-4 text-green-500" />
-            <span className="text-green-600 text-sm font-medium">All Time Rewards</span>
+            <TrendingUp className="w-4 h-4 text-green-500" />
+            <span className="text-green-600 text-sm font-medium">All Time Growth</span>
           </div>
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold text-gray-900">{statsData.currentMonth.coins.toLocaleString()}</p>
-              <p className="text-gray-600 text-sm">This Month</p>
+              <p className="text-2xl font-bold text-gray-900">₹{statsData.currentMonth.coins.toLocaleString()}</p>
+              <p className="text-gray-600 text-sm">Monthly Earnings</p>
             </div>
             <div className="p-3 bg-blue-100 rounded-lg">
               <Calendar className="w-6 h-6 text-blue-600" />
@@ -129,15 +129,15 @@ const EarningsContent = ({ data }) => {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold text-gray-900">{statsData.averageMonthly.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-gray-900">₹{statsData.averageMonthly.toLocaleString()}</p>
               <p className="text-gray-600 text-sm">Avg Monthly</p>
             </div>
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <TrendingUp className="w-6 h-6 text-purple-600" />
+            <div className="p-3 bg-indigo-100 rounded-lg">
+              <TrendingUp className="w-6 h-6 text-indigo-600" />
             </div>
           </div>
           <div className="flex items-center gap-1 mt-2">
-            <span className="text-gray-600 text-sm">Monthly average</span>
+            <span className="text-gray-600 text-sm">Monthly average income</span>
           </div>
         </div>
 
@@ -145,7 +145,7 @@ const EarningsContent = ({ data }) => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-2xl font-bold text-gray-900">{statsData.totalStudents}</p>
-              <p className="text-gray-600 text-sm">Students Taught</p>
+              <p className="text-gray-600 text-sm">Paid Students</p>
             </div>
             <div className="p-3 bg-green-100 rounded-lg">
               <Users className="w-6 h-6 text-green-600" />
@@ -153,7 +153,7 @@ const EarningsContent = ({ data }) => {
           </div>
           <div className="flex items-center gap-1 mt-2">
             <TrendingUp className="w-4 h-4 text-green-500" />
-            <span className="text-green-600 text-sm font-medium">+15% this month</span>
+            <span className="text-green-600 text-sm font-medium">Direct enrollment</span>
           </div>
         </div>
       </div>
@@ -162,14 +162,14 @@ const EarningsContent = ({ data }) => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Rewards</h3>
-            <span className="text-sm text-gray-600">{recentTransactions.length} transactions</span>
+            <h3 className="text-lg font-semibold text-gray-900">Recent Enrollments</h3>
+            <span className="text-sm text-gray-600">{recentTransactions.length} sales</span>
           </div>
         </div>
         <div className="p-6">
           <div className="space-y-4">
             {recentTransactions.map((transaction) => (
-              <div key={transaction.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-yellow-300 transition-colors">
+              <div key={transaction.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${getTransactionColor(transaction.type)}`}>
                     {transaction.icon}
@@ -181,9 +181,8 @@ const EarningsContent = ({ data }) => {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-yellow-600 flex items-center gap-1 justify-end">
-                    <Coins className="w-4 h-4" />
-                    +{transaction.coins}
+                  <p className="font-semibold text-green-600 flex items-center gap-1 justify-end">
+                    ₹{transaction.coins}
                   </p>
                   <p className="text-xs text-gray-500">{getTransactionLabel(transaction.type)}</p>
                 </div>
@@ -195,33 +194,29 @@ const EarningsContent = ({ data }) => {
 
       {/* Rewards & Milestones */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Achievement Milestones */}
+        {/* Revenue Milestones */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Achievement Milestones</h3>
-            <p className="text-gray-600 text-sm mt-1">Unlock rewards as you earn more coins</p>
+            <h3 className="text-lg font-semibold text-gray-900">Revenue Milestones</h3>
+            <p className="text-gray-600 text-sm mt-1">Unlock professional perks as you reach earning goals</p>
           </div>
           <div className="p-6">
             <div className="space-y-4">
               {rewardsMilestones.map((milestone, index) => (
                 <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      milestone.achieved ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
-                    }`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${milestone.achieved ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
+                      }`}>
                       {milestone.achieved ? <Crown className="w-5 h-5" /> : <Award className="w-5 h-5" />}
                     </div>
                     <div>
                       <h4 className="font-semibold text-gray-900">{milestone.reward}</h4>
-                      <p className="text-sm text-gray-600">{milestone.coins.toLocaleString()} coins required</p>
+                      <p className="text-sm text-gray-600">₹{milestone.coins.toLocaleString()} Revenue Goal</p>
                     </div>
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    milestone.achieved 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    {milestone.achieved ? 'Achieved! 🎉' : 'In Progress'}
+                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${milestone.achieved ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                    }`}>
+                    {milestone.achieved ? 'Reached! 🎉' : 'Pending'}
                   </div>
                 </div>
               ))}
@@ -229,29 +224,29 @@ const EarningsContent = ({ data }) => {
           </div>
         </div>
 
-        {/* Quick Stats */}
+        {/* Right Column: Breakdown & Goals */}
         <div className="space-y-6">
-          {/* Coin Usage */}
+          {/* Revenue Breakdown */}
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-            <h4 className="font-semibold text-gray-900 mb-4">Coin Rewards</h4>
+            <h4 className="font-semibold text-gray-900 mb-4">Revenue Summary</h4>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Course Sales</span>
-                <span className="font-semibold text-green-600">+4,250 coins</span>
+                <span className="font-semibold text-green-600">+₹4,250</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Student Bonuses</span>
-                <span className="font-semibold text-yellow-600">+890 coins</span>
+                <span className="text-sm text-gray-600">Bonuses</span>
+                <span className="font-semibold text-yellow-600">+₹890</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Referral Rewards</span>
-                <span className="font-semibold text-purple-600">+560 coins</span>
+                <span className="text-sm text-gray-600">Referrals</span>
+                <span className="font-semibold text-purple-600">+₹560</span>
               </div>
               <div className="flex justify-between items-center pt-3 border-t border-gray-200">
-                <span className="text-sm font-semibold text-gray-900">Available Balance</span>
-                <span className="font-bold text-yellow-600 flex items-center gap-1">
-                  <Coins className="w-4 h-4" />
-                  5,420 coins
+                <span className="text-sm font-semibold text-gray-900">Withdrawable Balance</span>
+                <span className="font-bold text-green-600 flex items-center gap-1">
+                  <DollarSign className="w-4 h-4" />
+                  ₹{statsData.totalCoins.toLocaleString()}
                 </span>
               </div>
             </div>
@@ -263,15 +258,15 @@ const EarningsContent = ({ data }) => {
               <Zap className="w-6 h-6" />
               <h4 className="font-semibold text-lg">Next Goal</h4>
             </div>
-            <p className="text-yellow-100 mb-2">Reach 10,000 coins to unlock Platinum Rank</p>
+            <p className="text-yellow-100 mb-2">Earn ₹10,000 to unlock Platinum Rank</p>
             <div className="w-full bg-yellow-200 rounded-full h-2">
-              <div 
+              <div
                 className="bg-white h-2 rounded-full"
                 style={{ width: `${(statsData.totalCoins / 10000) * 100}%` }}
               ></div>
             </div>
             <p className="text-yellow-100 text-sm mt-2 text-right">
-              {statsData.totalCoins.toLocaleString()} / 10,000 coins
+              ₹{statsData.totalCoins.toLocaleString()} / ₹10,000
             </p>
           </div>
         </div>

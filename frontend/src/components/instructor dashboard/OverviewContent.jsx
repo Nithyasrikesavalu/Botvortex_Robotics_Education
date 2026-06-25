@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import { 
-  Users, BookOpen, DollarSign, Star, TrendingUp, Plus, Award, 
+import {
+  Users, BookOpen, DollarSign, Star, TrendingUp, Plus, Award,
   Target, Zap, Sparkles, Rocket, Brain, Lightbulb, Calendar,
   MessageCircle, Clock, BarChart3, Crown, Bookmark
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const OverviewContent = ({ data }) => {
-  const { stats, courses, students, earnings } = data;
+  if (!data) return null;
+  const { stats = { totalStudents: 0, totalCourses: 0, totalEarnings: 0, averageRating: 0 }, courses = [], students = [], earnings = [] } = data;
   const [activeTab, setActiveTab] = useState("insights");
 
   // Achievement badges data
@@ -32,15 +33,15 @@ const OverviewContent = ({ data }) => {
       <div className="bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 rounded-2xl p-6 text-white mb-8 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full -translate-x-12 translate-y-12"></div>
-        
+
         <div className="flex justify-between items-start relative z-10">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-3">
               <Sparkles className="w-6 h-6 text-yellow-300" />
-              <h2 className="text-2xl font-bold">Amazing work, Instructor! 🎉</h2>
+              <h2 className="text-2xl font-bold">Amazing work, {data?.fullName || "Instructor"}! 🎉</h2>
             </div>
             <p className="text-purple-100 mb-4 text-lg">
-              You've impacted <span className="font-semibold text-yellow-300">{stats.totalStudents.toLocaleString()}</span> learners this month. 
+              You've impacted <span className="font-semibold text-yellow-300">{(stats.totalStudents || 0).toLocaleString()}</span> learners this month.
               That's <span className="font-semibold">+{Math.floor(stats.totalStudents * 0.12)}</span> new minds ignited!
             </p>
             <div className="flex gap-3">
@@ -63,38 +64,38 @@ const OverviewContent = ({ data }) => {
       {/* Interactive Stats Grid with Hover Effects */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {[
-          { 
-            value: stats.totalStudents.toLocaleString(), 
-            label: "Active Learners", 
-            icon: Users, 
+          {
+            value: stats.totalStudents.toLocaleString(),
+            label: "Active Learners",
+            icon: Users,
             color: "blue",
             change: "+12%",
             description: "Growing community"
           },
-          { 
-            value: stats.totalCourses, 
-            label: "Live Courses", 
-            icon: BookOpen, 
+          {
+            value: stats.totalCourses,
+            label: "Live Courses",
+            icon: BookOpen,
             color: "purple",
             description: "Knowledge shared"
           },
-          { 
-            value: `₹${stats.totalEarnings.toLocaleString()}`, 
-            label: "Total Impact", 
-            icon: DollarSign, 
+          {
+            value: `₹${stats.totalEarnings.toLocaleString()}`,
+            label: "Total Revenue",
+            icon: DollarSign,
             color: "green",
             change: "+8%",
-            description: "Value created"
+            description: "Value produced"
           },
-          { 
-            value: stats.averageRating, 
-            label: "Student Love", 
-            icon: Star, 
+          {
+            value: stats.averageRating,
+            label: "Student Love",
+            icon: Star,
             color: "yellow",
             description: "Out of 5 stars"
           }
         ].map((stat, index) => (
-          <div 
+          <div
             key={index}
             className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-lg hover:border-purple-300 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group"
           >
@@ -131,11 +132,10 @@ const OverviewContent = ({ data }) => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-lg font-medium capitalize transition-all ${
-                  activeTab === tab
-                    ? "bg-purple-100 text-purple-700 border border-purple-200"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                }`}
+                className={`px-4 py-2 rounded-lg font-medium capitalize transition-all ${activeTab === tab
+                  ? "bg-purple-100 text-purple-700 border border-purple-200"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  }`}
               >
                 {tab}
               </button>
@@ -148,14 +148,12 @@ const OverviewContent = ({ data }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {quickStats.map((stat, index) => (
                 <div key={index} className="text-center p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors">
-                  <stat.icon className={`w-8 h-8 mx-auto mb-2 ${
-                    stat.trend === "up" ? "text-green-500" : "text-red-500"
-                  }`} />
+                  <stat.icon className={`w-8 h-8 mx-auto mb-2 ${stat.trend === "up" ? "text-green-500" : "text-red-500"
+                    }`} />
                   <p className="text-lg font-bold text-gray-900">{stat.value}</p>
                   <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
-                  <span className={`text-xs font-medium ${
-                    stat.trend === "up" ? "text-green-600" : "text-red-600"
-                  }`}>
+                  <span className={`text-xs font-medium ${stat.trend === "up" ? "text-green-600" : "text-red-600"
+                    }`}>
                     {stat.change}
                   </span>
                 </div>
@@ -173,7 +171,7 @@ const OverviewContent = ({ data }) => {
                   <div className="flex-1">
                     <p className="font-semibold text-gray-900">{achievement.label}</p>
                     <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                      <div 
+                      <div
                         className={`h-2 rounded-full bg-gradient-to-r ${achievement.color}`}
                         style={{ width: `${achievement.progress}%` }}
                       ></div>
@@ -213,16 +211,15 @@ const OverviewContent = ({ data }) => {
           </div>
           <div className="p-6 space-y-4">
             {courses.slice(0, 3).map((course, index) => (
-              <div 
-                key={course.id} 
+              <div
+                key={course.id}
                 className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:shadow-md transition-all group cursor-pointer"
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className={`w-2 h-2 rounded-full ${
-                      index === 0 ? "bg-green-500" : 
+                    <div className={`w-2 h-2 rounded-full ${index === 0 ? "bg-green-500" :
                       index === 1 ? "bg-blue-500" : "bg-purple-500"
-                    }`}></div>
+                      }`}></div>
                     <h4 className="font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">
                       {course.title}
                     </h4>
@@ -244,7 +241,7 @@ const OverviewContent = ({ data }) => {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-20 bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-green-500 to-teal-500 h-2 rounded-full transition-all duration-1000"
                       style={{ width: `${course.progress}%` }}
                     ></div>
@@ -269,8 +266,8 @@ const OverviewContent = ({ data }) => {
           </div>
           <div className="p-6 space-y-4">
             {students.slice(0, 3).map((student, index) => (
-              <div 
-                key={student.id} 
+              <div
+                key={student.id}
                 className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all group cursor-pointer"
               >
                 <div className="flex items-center gap-3">
@@ -280,10 +277,9 @@ const OverviewContent = ({ data }) => {
                       alt={student.name}
                       className="w-12 h-12 rounded-full border-2 border-white group-hover:border-blue-200 transition-colors"
                     />
-                    <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
-                      student.progress > 80 ? "bg-green-500" : 
+                    <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${student.progress > 80 ? "bg-green-500" :
                       student.progress > 50 ? "bg-yellow-500" : "bg-red-500"
-                    }`}></div>
+                      }`}></div>
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
@@ -297,7 +293,7 @@ const OverviewContent = ({ data }) => {
                 </div>
                 <div className="text-right">
                   <div className="w-16 bg-gray-200 rounded-full h-2 mb-1">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full transition-all duration-1000"
                       style={{ width: `${student.progress}%` }}
                     ></div>

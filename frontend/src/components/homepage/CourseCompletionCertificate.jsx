@@ -8,27 +8,27 @@ const CertificateShowcase = () => {
     courseName: "AI-Powered Robotics Mastery",
     completionDate: "December 2024",
   };
-    useEffect(() => {
-      window.scrollTo({
-        top: 0,
-        left: 0,
-      });
-    }, []);
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+    });
+  }, []);
   const achievements = [
     { icon: Brain, title: "AI-Guided Learning", description: "Adaptive feedback ensures continuous growth", count: "10K+" },
     { icon: Cpu, title: "Practical Robotics", description: "Real-world projects and industry tools", count: "95%" },
     { icon: Users, title: "Global Recognition", description: "Worldwide network of professionals", count: "50+" },
     { icon: Rocket, title: "Career Boost", description: "Verified certificates for portfolios", count: "4.9★" }
   ];
-   useEffect(() => {
-      window.scrollTo({
-        top: 0,
-        left: 0,
-      });
-    }, []);
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+    });
+  }, []);
   return (
     <section className="bg-gradient-to-br from-gray-50 to-blue-50 py-16 px-6 md:px-20 flex flex-col md:flex-row items-center justify-center gap-12">
-      
+
       {/* LEFT SIDE - Certificate */}
       <motion.div
         initial={{ opacity: 0, x: -50 }}
@@ -37,23 +37,23 @@ const CertificateShowcase = () => {
         className="relative w-full md:w-1/2 max-w-2xl"
       >
         {/* Certificate Container */}
-        <div className="relative rounded-2xl shadow-2xl border border-gray-200 overflow-hidden bg-white backdrop-blur-sm transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/20 hover:scale-[1.02] hover:border-blue-300">
-          
+        <div id="certificate-download-area" className="relative rounded-2xl shadow-2xl border border-gray-200 overflow-hidden bg-white backdrop-blur-sm transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/20 hover:scale-[1.02] hover:border-blue-300">
+
           {/* Gradient Border Effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-2xl -m-0.5"></div>
-          
+
           {/* Corner Decorations */}
           <div className="absolute top-4 left-4 w-14 h-14 border-t-2 border-l-2 border-blue-600/60 transition-all duration-500 hover:border-blue-600"></div>
           <div className="absolute top-4 right-4 w-14 h-14 border-t-2 border-r-2 border-purple-600/60 transition-all duration-500 hover:border-purple-600"></div>
           <div className="absolute bottom-4 left-4 w-14 h-14 border-b-2 border-l-2 border-purple-600/60 transition-all duration-500 hover:border-purple-600"></div>
           <div className="absolute bottom-4 right-4 w-14 h-14 border-b-2 border-r-2 border-blue-600/60 transition-all duration-500 hover:border-blue-600"></div>
 
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-[0.03] bg-[url('https://cdn-icons-png.flaticon.com/512/4712/4712109.png')] bg-center bg-contain bg-no-repeat"></div>
+          {/* Background Pattern - Simplified to avoid external URL CORS issues */}
+          <div className="absolute inset-0 opacity-[0.03] bg-gradient-to-br from-blue-600 to-purple-600"></div>
 
           {/* Certificate Content */}
           <div className="relative z-10 text-center p-8 md:p-12 flex flex-col items-center justify-center">
-            
+
             {/* Header */}
             <div className="mb-8">
               <div className="flex items-center justify-center gap-3 mb-3">
@@ -118,12 +118,10 @@ const CertificateShowcase = () => {
             </div>
           </div>
 
-          {/* Corner Robot Icon */}
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png"
-            alt="Robot Icon"
-            className="absolute bottom-4 right-4 w-12 h-12 opacity-70 transition-all duration-500 hover:opacity-100 hover:scale-110"
-          />
+          {/* Corner Robot Icon - Replaced with Lucide to avoid CORS issues */}
+          <div className="absolute bottom-4 right-4 text-blue-600/30">
+            <Bot className="w-12 h-12" />
+          </div>
         </div>
       </motion.div>
 
@@ -144,15 +142,15 @@ const CertificateShowcase = () => {
             with BotVortex
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed">
-            Every BotVortex learner earns a professional certification upon course completion. 
-            These certificates validate your robotics knowledge, hands-on experience, and AI-based learning progress — 
+            Every BotVortex learner earns a professional certification upon course completion.
+            These certificates validate your robotics knowledge, hands-on experience, and AI-based learning progress —
             helping you stand out in your academic or career pursuits.
           </p>
         </div>
 
         {/* Stats Section */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-6">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
@@ -162,7 +160,7 @@ const CertificateShowcase = () => {
             <div className="text-2xl md:text-3xl font-bold text-blue-600">10K+</div>
             <div className="text-xs text-gray-600 uppercase tracking-wide font-medium">Certificates Issued</div>
           </motion.div>
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -172,7 +170,7 @@ const CertificateShowcase = () => {
             <div className="text-2xl md:text-3xl font-bold text-purple-600">95%</div>
             <div className="text-xs text-gray-600 uppercase tracking-wide font-medium">Completion Rate</div>
           </motion.div>
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
@@ -182,7 +180,7 @@ const CertificateShowcase = () => {
             <div className="text-2xl md:text-3xl font-bold text-pink-600">50+</div>
             <div className="text-xs text-gray-600 uppercase tracking-wide font-medium">Countries</div>
           </motion.div>
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}

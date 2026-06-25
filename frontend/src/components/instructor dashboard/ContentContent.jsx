@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { API_URL } from "../../config/api";
+import React, { useState, useEffect } from "react";
 import { Video, FileText, FileCheck, Upload, Plus, FolderOpen, Image, PlayCircle, Download, Trash2, Edit3, X, File, Film, BookOpen, Search, Filter, Eye } from "lucide-react";
 
 const ContentContent = () => {
@@ -9,13 +10,31 @@ const ContentContent = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("all");
 
-  const courses = [
-    "Advanced React Development",
-    "JavaScript Mastery",
-    "Python for Beginners",
-    "Web Design Fundamentals",
-    "Data Science Essentials"
-  ];
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      const token = localStorage.getItem("instructor_token");
+      if (!token) return;
+
+      try {
+        const response = await fetch(`${API_URL}/instructor/courses`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setCourses(data.map(c => c.title));
+        }
+      } catch (err) {
+        console.error("Error fetching courses:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   const contentTypes = [
     { id: "videos", label: "Videos", icon: Video, color: "blue", accept: "video/*", maxSize: 500 * 1024 * 1024, extensions: "MP4, MOV, MKV" },
@@ -94,17 +113,17 @@ const ContentContent = () => {
   // Filter content based on search and course selection
   const getFilteredContent = () => {
     let content = mockContent[activeContentType] || [];
-    
+
     if (searchTerm) {
-      content = content.filter(item => 
+      content = content.filter(item =>
         item.title.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    
+
     if (selectedCourse !== "all") {
       content = content.filter(item => item.course === selectedCourse);
     }
-    
+
     return content;
   };
 
@@ -122,21 +141,21 @@ const ContentContent = () => {
   const handleFileSelect = (event) => {
     const files = Array.from(event.target.files);
     const currentType = contentTypes.find(t => t.id === activeContentType);
-    
+
     const validFiles = files.filter(file => {
       // Check file size
       if (file.size > currentType.maxSize) {
         alert(`"${file.name}" is too large. Maximum size is ${formatFileSize(currentType.maxSize)}`);
         return false;
       }
-      
+
       // Check file type
       const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
       if (!currentType.accept.includes(fileExtension) && !currentType.accept.includes(file.type)) {
         alert(`"${file.name}" is not a supported file type. Supported types: ${currentType.extensions}`);
         return false;
       }
-      
+
       return true;
     });
 
@@ -151,7 +170,7 @@ const ContentContent = () => {
         if (progress >= 100) {
           progress = 100;
           clearInterval(interval);
-          
+
           // Add to mock content after upload
           setTimeout(() => {
             const newItem = createContentItem(file, activeContentType);
@@ -186,7 +205,7 @@ const ContentContent = () => {
   const createContentItem = (file, type) => {
     const fileExtension = file.name.split('.').pop().toLowerCase();
     const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
-    
+
     const baseItem = {
       id: Date.now() + Math.random(),
       title: file.name,
@@ -259,7 +278,7 @@ const ContentContent = () => {
 
   const getFileIcon = (fileType, fileName) => {
     const extension = fileName.split('.').pop().toLowerCase();
-    
+
     if (fileType === 'pdf' || extension === 'pdf') {
       return { icon: FileText, color: "text-red-500" };
     } else if (['doc', 'docx'].includes(extension)) {
@@ -284,11 +303,11 @@ const ContentContent = () => {
           <FolderOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No {contentTypes.find(t => t.id === activeContentType)?.label} Found</h3>
           <p className="text-gray-600 mb-4">
-            {searchTerm || selectedCourse !== "all" 
+            {searchTerm || selectedCourse !== "all"
               ? "Try adjusting your search or filter criteria."
               : "Upload your first document to get started."}
           </p>
-          <button 
+          <button
             onClick={() => setShowUploadModal(true)}
             className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
           >
@@ -304,7 +323,7 @@ const ContentContent = () => {
         {contents.map((item) => {
           const fileIcon = getFileIcon(item.type, item.title);
           const IconComponent = fileIcon.icon;
-          
+
           return (
             <div key={item.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors group">
               <div className="flex items-center gap-4 flex-1">
@@ -356,7 +375,7 @@ const ContentContent = () => {
                 <button className="p-2 text-green-600 hover:bg-green-50 rounded-lg" title="Download">
                   <Download className="w-4 h-4" />
                 </button>
-                <button 
+                <button
                   onClick={() => deleteContent(activeContentType, item.id)}
                   className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
                   title="Delete"
@@ -388,7 +407,7 @@ const ContentContent = () => {
                   Supported formats: {currentType?.extensions} • Max size: {formatFileSize(currentType?.maxSize || 0)}
                 </p>
               </div>
-              <button 
+              <button
                 onClick={() => {
                   setShowUploadModal(false);
                   setUploadingFiles([]);
@@ -451,7 +470,7 @@ const ContentContent = () => {
                 {uploadingFiles.map((file, index) => {
                   const fileIcon = getFileIcon('', file.name);
                   const IconComponent = fileIcon.icon;
-                  
+
                   return (
                     <div key={index} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50">
                       <div className="flex items-center gap-3 flex-1">
@@ -465,7 +484,7 @@ const ContentContent = () => {
                         {uploadProgress[file.name] !== undefined && (
                           <div className="flex items-center gap-2">
                             <div className="w-24 bg-gray-200 rounded-full h-2">
-                              <div 
+                              <div
                                 className="bg-green-600 h-2 rounded-full transition-all duration-300"
                                 style={{ width: `${uploadProgress[file.name]}%` }}
                               ></div>
@@ -475,7 +494,7 @@ const ContentContent = () => {
                             </span>
                           </div>
                         )}
-                        <button 
+                        <button
                           onClick={() => removeUploadingFile(file.name)}
                           className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
                           title="Remove file"
@@ -521,7 +540,7 @@ const ContentContent = () => {
 
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-900">Document Management</h2>
-        <button 
+        <button
           onClick={() => setShowUploadModal(true)}
           className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all"
         >
@@ -562,11 +581,10 @@ const ContentContent = () => {
           <button
             key={type.id}
             onClick={() => setActiveContentType(type.id)}
-            className={`p-4 rounded-xl border-2 text-left transition-all duration-200 ${
-              activeContentType === type.id
-                ? `${getColorClasses(type.color)} border-current shadow-md transform scale-105`
-                : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm"
-            }`}
+            className={`p-4 rounded-xl border-2 text-left transition-all duration-200 ${activeContentType === type.id
+              ? `${getColorClasses(type.color)} border-current shadow-md transform scale-105`
+              : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm"
+              }`}
           >
             <type.icon className="w-8 h-8 mb-2" />
             <h3 className="font-semibold text-gray-900">{type.label}</h3>
@@ -589,7 +607,7 @@ const ContentContent = () => {
                 {getFilteredContent().length} of {mockContent[activeContentType]?.length || 0} documents
               </p>
             </div>
-            <button 
+            <button
               onClick={() => setShowUploadModal(true)}
               className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
             >

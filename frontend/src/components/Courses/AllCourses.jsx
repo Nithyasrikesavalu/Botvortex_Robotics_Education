@@ -1,6 +1,7 @@
+import { API_URL } from "../../config/api";
 import React, { useState, useEffect } from "react";
 import { Search, Filter, Star, Clock, Users, BookOpen, Zap, ArrowRight, Coins } from "lucide-react";
-import { Link, Links } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const AllCourses = () => {
   const [courses, setCourses] = useState([]);
@@ -9,6 +10,7 @@ const AllCourses = () => {
   const [level, setLevel] = useState("all");
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [flippedCard, setFlippedCard] = useState(null);
+  const location = useLocation();
 
   // Hardcoded initial data for seeding or fallback
   const initialCourses = [
@@ -516,21 +518,77 @@ const AllCourses = () => {
         "Presentation skills"
       ],
     },
+    {
+      id: 25,
+      image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12",
+      title: "Foundations of Robotics Program",
+      description: "Master the fundamentals of electronics, mechanics, and basic programming for autonomous systems.",
+      level: "program",
+      levelClass: "bg-purple-600",
+      duration: "12 Weeks",
+      lectures: "40 Lectures",
+      rating: 4.9,
+      students: 850,
+      projects: 8,
+      coins: 2500,
+      learnings: ["Introduction to Electronics", "Arduino Programming", "Basic Kinematics", "Sensor Integration"],
+    },
+    {
+      id: 26,
+      image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12",
+      title: "AI & Machine Learning Program",
+      description: "Deep dive into neural networks, computer vision, and decision-making algorithms for smart robots.",
+      level: "program",
+      levelClass: "bg-purple-600",
+      duration: "16 Weeks",
+      lectures: "60 Lectures",
+      rating: 4.8,
+      students: 1200,
+      projects: 12,
+      coins: 3000,
+      learnings: ["Neural Networks", "Computer Vision", "Reinforcement Learning", "NLP for Robotics"],
+    },
+    {
+      id: 27,
+      image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12",
+      title: "Advanced Autonomous Systems Program",
+      description: "Build industrial-grade autonomous vehicles and multi-robot coordination systems.",
+      level: "program",
+      levelClass: "bg-purple-600",
+      duration: "20 Weeks",
+      lectures: "80 Lectures",
+      rating: 4.9,
+      students: 500,
+      projects: 15,
+      coins: 3500,
+      learnings: ["SLAM Algorithms", "ROS 2 Masterclass", "Path Planning", "Drone Technology"],
+    },
   ];
+
+  useEffect(() => {
+    if (location.hash) {
+      const h = location.hash.substring(1).toLowerCase();
+      if (["beginner", "intermediate", "advanced", "program"].includes(h)) {
+        setLevel(h);
+      }
+    } else {
+      setLevel("all");
+    }
+  }, [location.hash]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0 });
 
     const fetchCourses = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/courses");
+        const response = await fetch(`${API_URL}/courses`);
         if (response.ok) {
           const data = await response.json();
           if (data.length > 0) {
             setCourses(data);
           } else {
             // Seed if empty
-            await fetch("http://localhost:5000/api/courses/seed", {
+            await fetch(`${API_URL}/courses/seed`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ courses: initialCourses })
@@ -566,6 +624,7 @@ const AllCourses = () => {
       case "beginner": return "Beginner";
       case "intermediate": return "Intermediate";
       case "advanced": return "Advanced";
+      case "program": return "Programs";
       default: return "All Levels";
     }
   };
@@ -574,7 +633,8 @@ const AllCourses = () => {
   const coursesByLevel = {
     beginner: courses.filter(course => course.level === "beginner"),
     intermediate: courses.filter(course => course.level === "intermediate"),
-    advanced: courses.filter(course => course.level === "advanced")
+    advanced: courses.filter(course => course.level === "advanced"),
+    program: courses.filter(course => course.level === "program")
   };
 
   // Enhanced Flip Course Card Component
@@ -824,6 +884,7 @@ const AllCourses = () => {
                 <option value="beginner">Beginner</option>
                 <option value="intermediate">Intermediate</option>
                 <option value="advanced">Advanced</option>
+                <option value="program">Programs</option>
               </select>
             </div>
           </div>
@@ -872,14 +933,15 @@ const AllCourses = () => {
 
             {/* Level Filters */}
             <div className="hidden md:flex gap-2">
-              {["all", "beginner", "intermediate", "advanced"].map((lvl) => (
+              {["all", "beginner", "intermediate", "advanced", "program"].map((lvl) => (
                 <button
                   key={lvl}
                   onClick={() => setLevel(lvl)}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${level === lvl
                     ? `text-white ${lvl === "beginner" ? "bg-green-500" :
                       lvl === "intermediate" ? "bg-blue-500" :
-                        lvl === "advanced" ? "bg-yellow-500" : "bg-gray-500"
+                        lvl === "advanced" ? "bg-yellow-500" :
+                          lvl === "program" ? "bg-purple-600" : "bg-gray-500"
                     } shadow-lg`
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                     }`}
@@ -894,7 +956,7 @@ const AllCourses = () => {
           {level === "all" ? (
             <div className="space-y-16">
               {/* Beginner Section */}
-              <div>
+              <div id="beginner">
                 <div className="flex items-center gap-4 mb-8">
                   <div className="w-3 h-12 rounded-full bg-gradient-to-b from-green-500 to-green-600"></div>
                   <div>
@@ -915,7 +977,7 @@ const AllCourses = () => {
               </div>
 
               {/* Intermediate Section */}
-              <div>
+              <div id="intermediate">
                 <div className="flex items-center gap-4 mb-8">
                   <div className="w-3 h-12 rounded-full bg-gradient-to-b from-blue-500 to-blue-600"></div>
                   <div>
@@ -936,7 +998,7 @@ const AllCourses = () => {
               </div>
 
               {/* Advanced Section */}
-              <div>
+              <div id="advanced" className="pb-16">
                 <div className="flex items-center gap-4 mb-8">
                   <div className="w-3 h-12 rounded-full bg-gradient-to-b from-yellow-500 to-yellow-600"></div>
                   <div>
@@ -946,6 +1008,27 @@ const AllCourses = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {coursesByLevel.advanced
+                    .filter(course =>
+                      course.title.toLowerCase().includes(search.toLowerCase()) ||
+                      course.description.toLowerCase().includes(search.toLowerCase())
+                    )
+                    .map((course) => (
+                      <FlipCourseCard key={course.id} course={course} />
+                    ))}
+                </div>
+              </div>
+
+              {/* Programs Section */}
+              <div id="program">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-3 h-12 rounded-full bg-gradient-to-b from-purple-500 to-purple-600"></div>
+                  <div>
+                    <h2 className="text-3xl font-bold text-gray-800">Academic Programs</h2>
+                    <p className="text-gray-600 text-lg">Comprehensive learning tracks for deep expertise</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {coursesByLevel.program
                     .filter(course =>
                       course.title.toLowerCase().includes(search.toLowerCase()) ||
                       course.description.toLowerCase().includes(search.toLowerCase())

@@ -1,3 +1,4 @@
+import { API_URL } from "../../config/api";
 import React, { useState } from "react";
 import { ArrowLeft, Coins, CreditCard, Zap, Crown, Sparkles, Check, Lock, QrCode, Smartphone } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -295,7 +296,7 @@ const PaymentPage = () => {
 
       const totalCoins = selectedPackage.coins + (selectedPackage.bonus || 0);
 
-      const response = await fetch("http://localhost:5000/api/student/add-coins", {
+      const response = await fetch(`${API_URL}/student/add-coins`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

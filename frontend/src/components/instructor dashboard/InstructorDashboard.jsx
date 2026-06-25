@@ -1,10 +1,10 @@
+import { API_URL } from "../../config/api";
 // // import React, { useState } from "react";
 // // import { useLocation, Link } from "react-router-dom";
 // // import { 
 // //   Bot, Users, BarChart3, BookOpen, DollarSign, MessageSquare, 
 // //   Coins, TrendingUp, FileText, Settings, Bell, Plus, Star, Award
 // // } from "lucide-react";
-
 
 // // // Import all content components
 
@@ -19,7 +19,7 @@
 // // const InstructorDashboard = () => {
 // //   const location = useLocation();
 // //   const { email } = location.state || {};
-  
+
 // //   const [activeTab, setActiveTab] = useState("overview");
 // //   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -224,7 +224,6 @@
 //   Coins, TrendingUp, FileText, Settings, Bell, Plus, Star, Award
 // } from "lucide-react";
 
-
 // // Import all content components
 
 // import InstructorMyCourses from "./InstructorMyCourses";
@@ -238,7 +237,7 @@
 // const InstructorDashboard = () => {
 //   const location = useLocation();
 //   const { email } = location.state || {};
-  
+
 //   const [activeTab, setActiveTab] = useState("overview");
 //   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -438,8 +437,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { 
-  Bot, Users, BarChart3, BookOpen, DollarSign, MessageSquare, 
+import {
+  Bot, Users, BarChart3, BookOpen, DollarSign, MessageSquare,
   Coins, TrendingUp, FileText, Settings, Bell, Plus, Star, Award,
   X, CheckCircle, AlertCircle, Info, UserPlus, StarIcon
 } from "lucide-react";
@@ -453,182 +452,130 @@ import EarningsContent from "./EarningsContent";
 import StudentsContent from "./StudentsContent";
 import OverviewContent from "./OverviewContent";
 
-const InstructorDashboard = () => {
+const InstructorDashboard = ({ defaultTab = "overview" }) => {
   const location = useLocation();
   const { email } = location.state || {};
-  
-  const [activeTab, setActiveTab] = useState("overview");
+
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
-  // Mock notifications data
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: "success",
-      title: "New Student Enrollment",
-      message: "Sarah Johnson enrolled in your Advanced React Development course",
-      time: "5 minutes ago",
-      read: false,
-      icon: UserPlus,
-      action: "view"
-    },
-    {
-      id: 2,
-      type: "info",
-      title: "Course Review",
-      message: "You have a new 5-star review for your JavaScript Fundamentals course",
-      time: "1 hour ago",
-      read: false,
-      icon: StarIcon,
-      action: "view"
-    },
-    {
-      id: 3,
-      type: "warning",
-      title: "Earnings Update",
-      message: "Your monthly earnings have increased by 15% compared to last month",
-      time: "2 hours ago",
-      read: true,
-      icon: TrendingUp,
-      action: "view"
-    },
-    {
-      id: 4,
-      type: "info",
-      title: "New Message",
-      message: "You have a new student message waiting for your response",
-      time: "1 day ago",
-      read: true,
-      icon: MessageSquare,
-      action: "reply"
-    },
-    {
-      id: 5,
-      type: "success",
-      title: "Course Published",
-      message: "Your new course 'React Advanced Patterns' has been successfully published",
-      time: "2 days ago",
-      read: true,
-      icon: CheckCircle,
-      action: "view"
-    }
-  ]);
-
-  // Add new notification function
-  const addNewNotification = () => {
-    const newNotification = {
-      id: Date.now(),
-      type: "info",
-      title: "New Notification",
-      message: "This is a test notification added just now!",
-      time: "Just now",
-      read: false,
-      icon: Bell,
-      action: "view"
-    };
-    
-    setNotifications(prev => [newNotification, ...prev]);
-  };
-
-  // Auto-add notification every 30 seconds for demo
   useEffect(() => {
-    const interval = setInterval(() => {
-      const types = ["success", "info", "warning"];
-      const icons = [UserPlus, StarIcon, MessageSquare, TrendingUp];
-      const titles = [
-        "New Student Joined",
-        "Course Rating Updated",
-        "New Message Received",
-        "Revenue Increased",
-        "Course Completed"
-      ];
-      const messages = [
-        "A new student enrolled in your Web Development course",
-        "Your course received a new 5-star rating",
-        "You have a new message from a student",
-        "Your earnings increased by 20% this week",
-        "A student completed your React course successfully"
-      ];
+    const fetchDashboardData = async () => {
+      const token = localStorage.getItem("instructor_token");
+      const storedUser = JSON.parse(localStorage.getItem("instructor_user"));
 
-      const randomType = types[Math.floor(Math.random() * types.length)];
-      const randomIcon = icons[Math.floor(Math.random() * icons.length)];
-      const randomTitle = titles[Math.floor(Math.random() * titles.length)];
-      const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+      if (!token || !storedUser) {
+        setLoading(false);
+        return;
+      }
 
-      const newNotification = {
-        id: Date.now(),
-        type: randomType,
-        title: randomTitle,
-        message: randomMessage,
-        time: "Just now",
-        read: false,
-        icon: randomIcon,
-        action: "view"
-      };
+      // Check for instructor role
+      if (storedUser.role !== "instructor") {
+        setDashboardData(null); // This will trigger the "Access Denied" view
+        setLoading(false);
+        return;
+      }
 
-      setNotifications(prev => [newNotification, ...prev]);
-    }, 30000); // 30 seconds
+      setUser(storedUser);
 
-    return () => clearInterval(interval);
+      try {
+        const response = await fetch(`${API_URL}/instructor/dashboard`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setDashboardData(data);
+        }
+
+        // Fetch fresh user data to sync coins
+        const userRes = await fetch(`${API_URL}/instructor/settings`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (userRes.ok) {
+          const freshUser = await userRes.json();
+          setUser(prev => ({ ...prev, ...freshUser }));
+          localStorage.setItem("instructor_user", JSON.stringify({ ...storedUser, ...freshUser }));
+        }
+      } catch (err) {
+        console.error("Error fetching instructor data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
 
-  // Mock data - you can pass this to components as props
-  const dashboardData = {
-    stats: {
-      totalStudents: 1247,
-      totalCourses: 8,
-      totalEarnings: 4580,
-      averageRating: 4.8,
-      activeStudents: 892,
-      completionRate: 78
-    },
-    courses: [
-      {
-        id: 1,
-        title: "Advanced React Development",
-        students: 324,
-        revenue: 1240,
-        rating: 4.9,
-        progress: 85,
-        status: "active",
-        price: 149,
-        thumbnail: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=250&fit=crop",
-        modules: 12,
-        category: "Web Development"
-      },
-    ],
-    students: [
-      {
-        id: 1,
-        name: "Sarah Johnson",
-        email: "sarah@email.com",
-        course: "Advanced React",
-        joinDate: "2024-01-15",
-        progress: 92,
-        avatar: "https://randomuser.me/api/portraits/women/32.jpg"
-      },
-    ],
-    earnings: [
-      { month: "Jan", earnings: 3200 },
-      { month: "Feb", earnings: 2800 },
-      { month: "Mar", earnings: 4000 },
-      { month: "Apr", earnings: 3780 },
-      { month: "May", earnings: 5900 },
-      { month: "Jun", earnings: 4580 }
-    ],
-    reviews: [
-      {
-        id: 1,
-        student: "Sarah Johnson",
-        rating: 5,
-        comment: "Amazing course!",
-        date: "2024-01-20",
-        avatar: "https://randomuser.me/api/portraits/women/32.jpg",
-        course: "Advanced React Development"
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    // Only poll for notifications if we have a user and they are an instructor
+    if (!user || user.role !== "instructor") return;
+
+    const fetchNotifications = async () => {
+      const token = localStorage.getItem("instructor_token");
+      if (!token) return;
+
+      try {
+        const response = await fetch(`${API_URL}/instructor/notifications`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          // Map backend notifications to include icons
+          const formatted = data.map(n => ({
+            ...n,
+            id: n._id,
+            icon: n.icon === "UserPlus" ? UserPlus :
+              n.icon === "StarIcon" ? StarIcon :
+                n.icon === "MessageSquare" ? MessageSquare : Bell,
+            time: formatRelativeTime(n.createdAt)
+          }));
+          setNotifications(formatted);
+        }
+      } catch (err) {
+        console.error("Error fetching notifications:", err);
       }
-    ]
+    };
+
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 60000); // Polling every minute
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const formatRelativeTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+
+    if (diffInSeconds < 60) return "Just now";
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    return `${Math.floor(diffInSeconds / 86400)}d ago`;
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center text-center p-4">
+        <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+        <p className="text-gray-600 mb-6">You must be logged in as an instructor to access this dashboard.</p>
+        <Link to="/login" className="bg-purple-600 text-white px-6 py-2 rounded-lg font-bold">Go to Login</Link>
+      </div>
+    );
+  }
 
   // Navigation items
   const navItems = [
@@ -651,27 +598,49 @@ const InstructorDashboard = () => {
   };
 
   // Mark a single notification as read
-  const markAsRead = (id) => {
-    setNotifications(notifications.map(notification => 
-      notification.id === id ? { ...notification, read: true } : notification
-    ));
+  const markAsRead = async (id) => {
+    const token = localStorage.getItem("instructor_token");
+    if (!token) return;
+
+    try {
+      await fetch(`${API_URL}/instructor/notifications/${id}/read`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotifications(notifications.map(notification =>
+        notification.id === id ? { ...notification, read: true } : notification
+      ));
+    } catch (err) {
+      console.error("Error marking notification as read:", err);
+    }
   };
 
   // Mark all notifications as read
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(notification => ({
-      ...notification,
-      read: true
-    })));
+  const markAllAsRead = async () => {
+    const token = localStorage.getItem("instructor_token");
+    if (!token) return;
+
+    try {
+      await fetch(`${API_URL}/instructor/notifications/read-all`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotifications(notifications.map(notification => ({
+        ...notification,
+        read: true
+      })));
+    } catch (err) {
+      console.error("Error marking all notifications as read:", err);
+    }
   };
 
-  // Delete a notification
+  // Delete a notification (Local UI removal for now as backend doesn't have delete yet)
   const deleteNotification = (id, e) => {
     e.stopPropagation();
     setNotifications(notifications.filter(notification => notification.id !== id));
   };
 
-  // Clear all notifications
+  // Clear all (Local UI removal)
   const clearAllNotifications = () => {
     setNotifications([]);
   };
@@ -685,7 +654,7 @@ const InstructorDashboard = () => {
       case "success": return "text-green-500";
       case "warning": return "text-yellow-500";
       case "error": return "text-red-500";
-      case "info": 
+      case "info":
       default: return "text-blue-500";
     }
   };
@@ -696,14 +665,16 @@ const InstructorDashboard = () => {
       case "success": return "bg-green-50 border-green-200";
       case "warning": return "bg-yellow-50 border-yellow-200";
       case "error": return "bg-red-50 border-red-200";
-      case "info": 
+      case "info":
       default: return "bg-blue-50 border-blue-200";
     }
   };
 
   // Handle notification click
   const handleNotificationClick = (notification) => {
-    markAsRead(notification.id);
+    if (!notification.read) {
+      markAsRead(notification.id);
+    }
     // Here you can add navigation logic based on notification action
     console.log("Notification clicked:", notification);
     setShowNotifications(false);
@@ -725,7 +696,7 @@ const InstructorDashboard = () => {
       case "content":
         return <ContentContent />;
       case "settings":
-        return <SettingsContent email={email} />;
+        return <SettingsContent user={user} />;
       default:
         return <OverviewContent data={dashboardData} />;
     }
@@ -754,11 +725,10 @@ const InstructorDashboard = () => {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all duration-200 ${
-                activeTab === item.id
-                  ? "bg-purple-50 text-purple-700 border-r-2 border-purple-600"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
+              className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all duration-200 ${activeTab === item.id
+                ? "bg-purple-50 text-purple-700 border-r-2 border-purple-600"
+                : "text-gray-600 hover:bg-gray-100"
+                }`}
             >
               <item.icon className="w-5 h-5" />
               {sidebarOpen && <span className="font-medium">{item.label}</span>}
@@ -791,18 +761,20 @@ const InstructorDashboard = () => {
 
               <div className="flex items-center gap-4">
 
-                {/* Rewards Coins */}
-                <Link 
-                  to="/buy-coins"
-                  className="flex items-center gap-2 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 px-4 py-2 rounded-full hover:border-yellow-300 transition-all duration-300 cursor-pointer group"
+                {/* Instructor Earnings Display */}
+                <div
+                  className="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 px-4 py-2 rounded-full hover:border-purple-300 transition-all duration-300 cursor-pointer group shadow-sm"
                 >
-                  <Coins className="w-5 h-5 text-yellow-500 group-hover:scale-110 transition-transform" />
-                  <span className="font-bold text-gray-900">5,420</span>
-                </Link>
+                  <DollarSign className="w-5 h-5 text-purple-600 group-hover:scale-110 transition-transform" />
+                  <div className="flex flex-col">
+                    <p className="text-[10px] text-purple-400 font-bold uppercase tracking-tighter leading-none mb-1">Total Revenue</p>
+                    <span className="font-bold text-gray-900 leading-none">₹{(user?.coins || 0).toLocaleString()}</span>
+                  </div>
+                </div>
 
                 {/* Notifications */}
                 <div className="relative">
-                  <button 
+                  <button
                     onClick={toggleNotifications}
                     className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors"
                   >
@@ -855,9 +827,8 @@ const InstructorDashboard = () => {
                               <div
                                 key={notification.id}
                                 onClick={() => handleNotificationClick(notification)}
-                                className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer ${
-                                  !notification.read ? 'bg-blue-50' : ''
-                                }`}
+                                className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer ${!notification.read ? 'bg-blue-50' : ''
+                                  }`}
                               >
                                 <div className="flex gap-3">
                                   <div className="flex-shrink-0">
@@ -914,8 +885,9 @@ const InstructorDashboard = () => {
                     className="w-10 h-10 rounded-full border-2 border-purple-200"
                   />
                   <div className="text-right">
-                    <div className="font-semibold text-gray-900">John D.</div>
-                    <div className="text-sm text-gray-500">{email}</div>
+                    <div className="text-[10px] font-black text-purple-600 uppercase tracking-widest leading-none mb-1">Professional Instructor</div>
+                    <div className="font-semibold text-gray-900">{user?.fullName || "Instructor"}</div>
+                    <div className="text-sm text-gray-500">{user?.email || email}</div>
                   </div>
                 </div>
               </div>
@@ -927,16 +899,18 @@ const InstructorDashboard = () => {
         <main className="p-6">
           {renderContent()}
         </main>
-      </div>
+      </div >
 
       {/* Overlay for closing notifications when clicking outside */}
-      {showNotifications && (
-        <div 
-          className="fixed inset-0 z-40"
-          onClick={() => setShowNotifications(false)}
-        />
-      )}
-    </div>
+      {
+        showNotifications && (
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setShowNotifications(false)}
+          />
+        )
+      }
+    </div >
   );
 };
 

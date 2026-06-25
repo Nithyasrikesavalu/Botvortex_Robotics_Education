@@ -2,6 +2,8 @@ import User from '../models/User.js';
 import StudentProfile from '../models/StudentProfile.js';
 import EnrolledCourse from '../models/EnrolledCourse.js';
 import Transaction from '../models/Transaction.js';
+import Course from '../models/Course.js';
+import Notification from '../models/Notification.js';
 
 // --- Student Profile Controllers ---
 
@@ -95,17 +97,74 @@ export const getEnrolledCourses = async (req, res) => {
 export const enrollInCourse = async (req, res) => {
     try {
         const userId = req.user.id;
-        const courseData = req.body;
+        const { courseId } = req.body;
+
+        if (!courseId) {
+            return res.status(400).json({ message: "Course ID is required" });
+        }
 
         // Check if already enrolled
-        const existing = await EnrolledCourse.findOne({ userId, courseId: courseData.courseId });
+        const existing = await EnrolledCourse.findOne({ userId, courseId });
         if (existing) {
             return res.status(400).json({ message: "Already enrolled in this course" });
         }
 
+        // Get Course Details
+        const course = await Course.findOne({ courseId });
+        if (!course) {
+            return res.status(404).json({ message: "Course not found" });
+        }
+
+        // Get Student and Instructor
+        const student = await User.findById(userId);
+        const instructor = await User.findById(course.instructor);
+
+        if (!student) return res.status(404).json({ message: "Student not found" });
+
+        // Check if student has enough coins
+        const coursePrice = course.coins || 0;
+        if (student.coins < coursePrice) {
+            return res.status(400).json({ message: "Insufficient coins to enroll in this course" });
+        }
+
+        // Start Transaction simulation (Deduction/Addition)
+        student.coins -= coursePrice;
+        await student.save();
+
+        if (instructor) {
+            instructor.coins = (instructor.coins || 0) + coursePrice;
+            await instructor.save();
+
+            // Create Notification for Instructor
+            await Notification.create({
+                userId: instructor._id,
+                title: "New Student Enrollment",
+                message: `${student.fullName} has enrolled in your course: ${course.title}`,
+                type: "success",
+                icon: "UserPlus",
+                action: "view"
+            });
+        }
+
+        // Create Transaction record for Student
+        await Transaction.create({
+            userId: student._id,
+            type: "enrollment",
+            amount: coursePrice,
+            coins: coursePrice,
+            status: "completed"
+        });
+
+        // Create Enrollment
         const newEnrollment = new EnrolledCourse({
             userId,
-            ...courseData
+            courseId: course.courseId,
+            title: course.title,
+            instructor: instructor ? instructor.fullName : "Unknown",
+            courseRef: course._id,
+            progress: 0,
+            totalLessons: 10, // Default or from course
+            thumbnailEmoji: course.thumbnailEmoji || "🚀"
         });
 
         await newEnrollment.save();

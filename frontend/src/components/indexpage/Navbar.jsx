@@ -1,3 +1,4 @@
+import { API_URL } from "../../config/api";
 import React, { useState, useEffect } from "react";
 import {
   Home,
@@ -14,30 +15,58 @@ import {
   LogOut,
   Coins,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const [active, setActive] = useState("Courses");
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.pathname === "/programs") {
+      setActive("Programs");
+    } else if (location.pathname === "/index") {
+      // Logic for hash can be complex, but for now just clear if not hash
+      if (!location.hash) setActive("Home");
+    }
+  }, [location.pathname, location.hash]);
 
   const navItems = [
     { name: "Home", icon: Home, id: "home" },
     { name: "Features", icon: Lightbulb, id: "features" },
     { name: "Courses", icon: GraduationCap, id: "courses" },
+    { name: "Programs", icon: BookOpen, id: "programs", path: "/programs" },
     { name: "Roadmap", icon: MapPin, id: "roadmap" },
     { name: "Reviews", icon: MessageSquare, id: "reviews" },
   ];
 
-  const profileItems = [
-    { name: "My Profile", icon: User, path: "/profile" },
-    { name: "My Courses", icon: BookOpen, path: "/my-courses" },
-    { name: "Settings", icon: Settings, path: "/settings" },
-    { name: "Logout", icon: LogOut, path: "/" },
-  ];
-
   /* New State for User Data */
   const [userData, setUserData] = useState(null);
+
+  /* Dynamic Profile Items based on Role */
+  const getProfileItems = () => {
+    const baseItems = [
+      { name: "Settings", icon: Settings, path: "/settings" },
+      { name: "Logout", icon: LogOut, path: "/" },
+    ];
+
+    if (userData?.role === "instructor") {
+      return [
+        { name: "Dashboard", icon: Bot, path: "/instructor-dashboard" },
+        ...baseItems
+      ];
+    }
+
+    return [
+      { name: "My Dashboard", icon: User, path: "/dashboard" },
+      { name: "My Courses", icon: BookOpen, path: "/my-courses" },
+      ...baseItems
+    ];
+  };
+
+  const profileItems = getProfileItems();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -49,7 +78,7 @@ const Navbar = () => {
       }
 
       try {
-        const response = await fetch("http://localhost:5000/api/student/profile", {
+        const response = await fetch(`${API_URL}/student/profile`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.ok) {
@@ -76,10 +105,21 @@ const Navbar = () => {
     window.location.href = "/login"; // Redirect to login
   };
 
-  const handleNavClick = (itemName, itemId) => {
-    setActive(itemName);
+  const handleNavClick = (item) => {
+    setActive(item.name);
     setMenuOpen(false);
-    const element = document.getElementById(itemId);
+
+    if (item.path) {
+      window.location.href = item.path;
+      return;
+    }
+
+    if (location.pathname !== "/index") {
+      navigate(`/index#${item.id}`);
+      return;
+    }
+
+    const element = document.getElementById(item.id);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
     }
@@ -104,7 +144,7 @@ const Navbar = () => {
             return (
               <button
                 key={item.name}
-                onClick={() => handleNavClick(item.name, item.id)}
+                onClick={() => handleNavClick(item)}
                 className={`relative flex items-center gap-1 text-sm font-medium transition-colors ${active === item.name
                   ? "text-[#00C3FF]"
                   : "text-gray-400 hover:text-white"
@@ -168,7 +208,11 @@ const Navbar = () => {
                       />
                       <div className="ml-3">
                         <div className="text-white font-bold">{userData.fullName || userData.personal?.name}</div>
-                        <div className="text-xs text-gray-400">{userData.personal?.role || userData.role || "Member"}</div>
+                        <div className="text-[10px] font-bold uppercase tracking-widest mt-0.5 px-2 py-0.5 rounded-md inline-block transition-all duration-300 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-white/10 group-hover:border-blue-500/30">
+                          <span className={`${userData.role === 'instructor' ? 'text-purple-400' : 'text-blue-400'}`}>
+                            {userData.role === 'instructor' ? 'Instructor' : 'Student'}
+                          </span>
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 bg-gradient-to-r from-[#FFD700]/20 to-[#FFA500]/20 border border-[#FFD700]/30 px-3 py-2 rounded-full">
@@ -272,7 +316,7 @@ const Navbar = () => {
               return (
                 <button
                   key={item.name}
-                  onClick={() => handleNavClick(item.name, item.id)}
+                  onClick={() => handleNavClick(item)}
                   className={`flex items-center gap-3 px-6 py-3 text-sm font-medium transition-all duration-200 group ${active === item.name
                     ? "text-[#00C3FF] bg-[#1a2333] border-r-4 border-[#00C3FF]"
                     : "text-gray-400 hover:text-white hover:bg-[#1a2333]"
@@ -300,7 +344,11 @@ const Navbar = () => {
                       <div className="text-white font-bold group-hover:text-[#00C3FF] transition-colors">
                         {userData.fullName || userData.personal?.name}
                       </div>
-                      <div className="text-xs text-gray-400">{userData.personal?.role || userData.role || "Member"}</div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest mt-0.5 px-2 py-0.5 rounded-md inline-block bg-white/5 border border-white/10">
+                        <span className={`${userData.role === 'instructor' ? 'text-purple-400' : 'text-blue-400'}`}>
+                          {userData.role === 'instructor' ? 'Instructor' : 'Student'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 bg-gradient-to-r from-[#FFD700]/20 to-[#FFA500]/20 border border-[#FFD700]/30 px-2 py-1 rounded-full">

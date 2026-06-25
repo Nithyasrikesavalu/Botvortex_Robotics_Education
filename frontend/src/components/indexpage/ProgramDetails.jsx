@@ -16,6 +16,7 @@ import {
     Clock
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import CertificateShowcase from '../homepage/CourseCompletionCertificate';
 
 const ProgramDetails = () => {
     const containerVariants = {
@@ -44,6 +45,8 @@ const ProgramDetails = () => {
             level: "Beginner",
             icon: Cpu,
             color: "blue",
+            coins: 2500,
+            image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12",
             description: "Master the fundamentals of electronics, mechanics, and basic programming for autonomous systems.",
             modules: ["Introduction to Electronics", "Arduino Programming", "Basic Kinematics", "Sensor Integration"]
         },
@@ -53,6 +56,8 @@ const ProgramDetails = () => {
             level: "Intermediate",
             icon: Brain,
             color: "purple",
+            coins: 3000,
+            image: "https://images.unsplash.com/photo-1555949963-aa79dcee981c",
             description: "Deep dive into neural networks, computer vision, and decision-making algorithms for smart robots.",
             modules: ["Neural Networks", "Computer Vision", "Reinforcement Learning", "NLP for Robotics"]
         },
@@ -62,6 +67,8 @@ const ProgramDetails = () => {
             level: "Advanced",
             icon: Rocket,
             color: "indigo",
+            coins: 3500,
+            image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b",
             description: "Build industrial-grade autonomous vehicles and multi-robot coordination systems.",
             modules: ["SLAM Algorithms", "ROS 2 Masterclass", "Path Planning", "Drone Technology"]
         }
@@ -139,6 +146,7 @@ const ProgramDetails = () => {
 
                                     <Link
                                         to="/enroll"
+                                        state={{ course: program }}
                                         className="flex items-center justify-center w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all duration-300 gap-2"
                                     >
                                         Enroll Now <ChevronRight className="w-5 h-5" />
@@ -210,6 +218,11 @@ const ProgramDetails = () => {
                     </div>
                 </div>
             </section>
+
+            {/* Certification Section */}
+            <div id="certification">
+                <CertificateShowcase />
+            </div>
         </div>
     );
 };

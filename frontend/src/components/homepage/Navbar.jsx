@@ -8,7 +8,7 @@ const HomeNavbar = () => {
   return (
     <nav className="w-full fixed top-0 left-0 bg-gradient-to-r from-[#0B1426] to-[#0F1B2E] text-white shadow-2xl border-b border-[#1E2A40] z-50 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-6 h-16">
-        
+
         {/* 🔷 Brand Logo */}
         <Link to="/" className="flex items-center gap-3 group cursor-pointer">
           <div className="relative">
@@ -29,7 +29,7 @@ const HomeNavbar = () => {
             to="/login"
             className="px-6 py-2 text-gray-300 hover:text-white font-semibold transition-all duration-300 hover:scale-105"
           >
-            Register
+            Login
           </Link>
           <Link
             to="/signup"
@@ -60,7 +60,7 @@ const HomeNavbar = () => {
             onClick={() => setIsMenuOpen(false)}
             className="block text-gray-300 hover:text-white font-semibold"
           >
-            Register
+            Login
           </Link>
           <Link
             to="/signup"

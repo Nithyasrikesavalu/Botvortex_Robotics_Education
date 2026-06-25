@@ -14,10 +14,13 @@ import SettingsPage from './components/StudentProfile/SettingsPage';
 import CoursesModule from './pages/CoursesModule';
 import PaymentPage from './components/indexpage/PaymentPage ';
 import InstructorDashboard from './components/instructor dashboard/InstructorDashboard';
+import Dashboard from './pages/Dashboard';
 import CreateCourse from './components/instructor dashboard/CreateCourse';
 import Enrollment from './components/Courses/Enrollment';
 import About from './components/indexpage/About';
-import ProgramDetails from './components/indexpage/ProgramDetails';
+import Specializations from './components/indexpage/Specializations';
+import CertificationPage from './components/indexpage/CertificationPage';
+import ProgramsPage from './pages/ProgramsPage';
 
 import ScrollToTop from './components/ScrollToTop';
 
@@ -28,15 +31,17 @@ const App = () => (<>
   <Routes>
     {/* {Homepage} */}
     <Route path="/" element={<Homepage />} />
-    <Route path='/login' element={<Register />} />
-    <Route path='/signup' element={<SignIn />} />
+    <Route path='/signup' element={<Register />} />
+    <Route path='/login' element={<SignIn />} />
     <Route path='/About' element={<AboutSection />} />
     {/* {Index page} */}
     <Route path='/index' element={<Indexpage />} />
     <Route path='/contact' element={<ContactPage />} />
     <Route path='/Ab' element={<About />} />
     <Route path='/Courses' element={<AllCourses />} />
-    <Route path='/programs' element={<ProgramDetails />} />
+    <Route path='/specializations' element={<Specializations />} />
+    <Route path='/certification' element={<CertificationPage />} />
+    <Route path='/programs' element={<ProgramsPage />} />
     <Route path="/buy-coins" element={<PaymentPage />} />
     {/* {All Courses}/ */}
     <Route path='/C' element={<CourseC1 />} />
@@ -45,11 +50,12 @@ const App = () => (<>
     <Route path="/CoursesModule" element={<CoursesModule />} />
 
     {/* profile page */}
-    <Route path="/profile" element={<StudentProfile />} />
-    <Route path="/my-courses" element={<BotVortexMyCourses />} />
-    <Route path="/settings" element={<SettingsPage />} />
+    <Route path="/dashboard" element={<Dashboard />} />
+    <Route path="/my-courses" element={<BotVortexMyCourses defaultTab="courses" />} />
+    <Route path="/settings" element={<BotVortexMyCourses defaultTab="settings" />} />
     {/* instructor-dashboard */}
     <Route path='/instructor-dashboard' element={<InstructorDashboard />} />
+    <Route path='/instructor-my-courses' element={<InstructorDashboard defaultTab="courses" />} />
     <Route path="/create-course" element={<CreateCourse />} />
   </Routes>
 </>

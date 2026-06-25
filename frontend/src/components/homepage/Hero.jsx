@@ -39,11 +39,11 @@ const Banner = () => {
   };
 
   return (
-    <section className="relative mt-16 overflow-hidden bg-gradient-to-br from-[#0B1426] to-[#0F1B2E]">
+    <section id="home" className="relative mt-16 overflow-hidden bg-gradient-to-br from-[#0B1426] to-[#0F1B2E]">
       {/* Carousel Container */}
       <div className="relative w-full h-[600px] lg:h-[700px] overflow-hidden">
         {/* Slides */}
-        <div 
+        <div
           className="flex h-full transition-transform duration-500 ease-in-out"
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
         >
@@ -65,7 +65,7 @@ const Banner = () => {
         </div>
 
         {/* Gradient Overlay */}
-         <div className="absolute inset-0 bg-gradient-to-r from-[#0B1426]/70 via-[#0B1426]/50 to-[#0B1426]/70"></div> 
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0B1426]/70 via-[#0B1426]/50 to-[#0B1426]/70"></div>
 
         {/* Navigation Arrows */}
         <button
@@ -74,7 +74,7 @@ const Banner = () => {
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
-        
+
         <button
           onClick={nextSlide}
           className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-sm"
@@ -88,11 +88,10 @@ const Banner = () => {
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index === currentSlide 
-                  ? 'bg-[#00C3FF] w-8' 
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentSlide
+                  ? 'bg-[#00C3FF] w-8'
                   : 'bg-white/50 hover:bg-white/70'
-              }`}
+                }`}
             />
           ))}
         </div>
@@ -121,7 +120,7 @@ const Banner = () => {
 
             {/* Description */}
             <p className="text-xl text-gray-200 mb-8 leading-relaxed max-w-2xl">
-              Learn robotics from basics to advanced AI systems with hands-on projects, 
+              Learn robotics from basics to advanced AI systems with hands-on projects,
               expert mentorship, and cutting-edge curriculum designed for the future.
             </p>
 
@@ -135,7 +134,7 @@ const Banner = () => {
                 Start Learning Free
                 <ArrowRight className="w-5 h-5" />
               </Link>
-              
+
             </div>
 
             {/* Stats */}

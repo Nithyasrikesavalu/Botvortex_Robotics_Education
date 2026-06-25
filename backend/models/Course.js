@@ -19,7 +19,21 @@ const CourseSchema = new mongoose.Schema({
     projects: { type: Number, default: 0 },
     coins: { type: Number, default: 0 },
     learnings: [{ type: String }],
-    thumbnailEmoji: { type: String, default: '🚀' }
+    thumbnailEmoji: { type: String, default: '🚀' },
+    instructor: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    modules: [{
+        title: { type: String, required: true },
+        type: { type: String, enum: ['video', 'pdf', 'assignment'], required: true },
+        url: { type: String, required: true },
+        description: { type: String },
+        duration: { type: String },
+        resources: { type: Number, default: 0 },
+        order: { type: Number },
+        createdAt: { type: Date, default: Date.now }
+    }]
 }, { timestamps: true });
 
 export default mongoose.model('Course', CourseSchema);

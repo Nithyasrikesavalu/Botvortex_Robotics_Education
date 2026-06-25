@@ -7,6 +7,10 @@ const EnrolledCourseSchema = new mongoose.Schema({
         required: true
     },
     courseId: { type: String, required: true },
+    courseRef: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Course'
+    },
     title: { type: String, required: true },
     instructor: { type: String, default: '' },
     progress: { type: Number, default: 0 },

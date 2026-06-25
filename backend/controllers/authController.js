@@ -3,7 +3,6 @@ import Otp from "../models/Otp.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import transporter from "../config/mail.js";
-import fs from "fs";
 
 /* ===================== SEND OTP ===================== */
 export const sendOtp = async (req, res) => {
@@ -24,15 +23,12 @@ export const sendOtp = async (req, res) => {
 
     if (existingUser) {
       return res.status(400).json({
-        message: "Account already registered", // Standard message
-        role: existingUser.userType // Return role so frontend can show "Registered as Student/Instructor"
+        message: "Account already registered",
+        role: existingUser.userType
       });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    // Save to file for debugging/mocking SMS
-    fs.writeFileSync("otp.txt", `OTP for ${identifier}: ${otp}`);
 
     await Otp.deleteMany({ identifier });
     console.log("🗑 Old OTPs cleared");
@@ -48,27 +44,31 @@ export const sendOtp = async (req, res) => {
     if (identifier.includes("@")) {
       try {
         await transporter.sendMail({
-          from: process.env.EMAIL_USER,
+          from: `"BotVortex" <${process.env.EMAIL_USER}>`,
           to: identifier,
-          subject: "BotVortex OTP Verification",
-          html: `<h3>Your OTP is <b>${otp}</b></h3>`
+          subject: "BotVortex - Email Verification OTP",
+          html: `
+            <div style="font-family:Arial,sans-serif;max-width:500px;margin:auto;padding:24px;border:1px solid #e0e0e0;border-radius:8px;">
+              <h2 style="color:#6c3ce1;">🤖 BotVortex Email Verification</h2>
+              <p>Thank you for registering! Your OTP to verify your email is:</p>
+              <h1 style="letter-spacing:8px;color:#333;background:#f3f0ff;padding:16px;border-radius:6px;text-align:center;">${otp}</h1>
+              <p style="color:#888;font-size:13px;">This code expires in <b>5 minutes</b>. Do not share it with anyone.</p>
+              <hr style="border:none;border-top:1px solid #eee;margin:16px 0;">
+              <p style="color:#aaa;font-size:11px;">If you didn't request this, please ignore this email.</p>
+            </div>
+          `
         });
-        console.log("📧 Mail sent successfully");
+        console.log("📧 Mail sent successfully to:", identifier);
       } catch (mailError) {
         console.error("❌ Mail sending failed:", mailError);
-        // Don't fail the request, just let them know or return OTP for debug
-        return res.json({
-          message: "OTP generated (Email failed - check server logs)",
-          debugOtp: otp, // Return OTP so user can proceed
-          verificationToken: null // No token yet
-        });
+        return res.status(500).json({ message: "Failed to send OTP email. Please try again." });
       }
     } else {
       // Mock SMS
       console.log(`📱 [MOCK SMS] Sending OTP ${otp} to mobile ${identifier}`);
     }
 
-    res.json({ message: "OTP sent successfully", debugOtp: otp });
+    res.json({ message: "OTP sent successfully" });
   } catch (error) {
     console.error("❌ OTP ERROR:", error);
     res.status(500).json({ message: "OTP send failed", error: error.message });
@@ -197,9 +197,6 @@ export const sendForgotPasswordOtp = async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Save to file for debug
-    fs.writeFileSync("otp_reset.txt", `Reset OTP for ${email}: ${otp}`);
-
     await Otp.deleteMany({ identifier: email });
 
     await Otp.create({
@@ -211,19 +208,22 @@ export const sendForgotPasswordOtp = async (req, res) => {
     // Send Email
     try {
       await transporter.sendMail({
-        from: process.env.EMAIL_USER,
+        from: `"BotVortex" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: "BotVortex Password Reset OTP",
         html: `
-          <h3>Password Reset Request</h3>
-          <p>Your OTP to reset your password is: <b>${otp}</b></p>
-          <p>This code expires in 5 minutes.</p>
+          <div style="font-family:Arial,sans-serif;max-width:500px;margin:auto;padding:24px;border:1px solid #e0e0e0;border-radius:8px;">
+            <h2 style="color:#6c3ce1;">🔐 BotVortex Password Reset</h2>
+            <p>Your OTP to reset your password is:</p>
+            <h1 style="letter-spacing:8px;color:#333;background:#f3f0ff;padding:16px;border-radius:6px;text-align:center;">${otp}</h1>
+            <p style="color:#888;font-size:13px;">This code expires in <b>5 minutes</b>. Do not share it with anyone.</p>
+          </div>
         `
       });
       console.log("📧 Reset Mail sent successfully");
     } catch (mailError) {
       console.error("❌ Mail sending failed:", mailError);
-      return res.status(500).json({ message: "Failed to send email. Check server logs." });
+      return res.status(500).json({ message: "Failed to send OTP email. Please try again later." });
     }
 
     res.json({ message: "OTP sent to your email" });
@@ -305,15 +305,19 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     // Check if user exists
+    console.log("🔑 Login attempt for email:", email);
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
+      console.log("❌ User not found in DB for email:", email);
       return res.status(404).json({ message: "Account not found" });
     }
 
     // Check password
+    console.log("💡 Found user, comparing passwords...");
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
+      console.log("❌ Password mismatch for email:", email);
       return res.status(401).json({ message: "Invalid username or password" });
     }
 

@@ -1,5 +1,6 @@
 import React from "react";
-import { Bot } from "lucide-react"; 
+import { Link } from "react-router-dom";
+import { Bot } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -30,12 +31,12 @@ const Footer = () => {
               {["Home", "Features", "Courses", "Roadmap", "Reviews"].map(
                 (item) => (
                   <li key={item}>
-                    <a
-                      href="#"
+                    <Link
+                      to={`/index#${item.toLowerCase()}`}
                       className="text-gray-300 hover:text-cyan-400 transition-all duration-200 block transform hover:translate-x-1"
                     >
                       {item}
-                    </a>
+                    </Link>
                   </li>
                 )
               )}
@@ -49,21 +50,30 @@ const Footer = () => {
             </h4>
             <ul className="space-y-2">
               {[
-                "Beginner Courses",
-                "Intermediate Courses",
-                "Advanced Courses",
-                "Specializations",
-                "Certification Programs",
-              ].map((course) => (
-                <li key={course}>
-                  <a
-                    href="#"
+                { name: "Beginner Courses", to: "/Courses#beginner" },
+                { name: "Intermediate Courses", to: "/Courses#intermediate" },
+                { name: "Advanced Courses", to: "/Courses#advanced" },
+                { name: "Programs", to: "/programs" },
+                { name: "Specializations", to: "/specializations" },
+                { name: "Certification", to: "/certification" },
+              ].map((category, index) => (
+                <li key={category.name}>
+                  <Link
+                    to={category.to}
                     className="text-gray-300 hover:text-cyan-400 transition-all duration-200 block transform hover:translate-x-1"
                   >
-                    {course}
-                  </a>
+                    {category.name}
+                  </Link>
                 </li>
               ))}
+              <li>
+                <Link
+                  to="/Courses"
+                  className="text-gray-300 hover:text-cyan-400 transition-all duration-200 block transform hover:translate-x-1"
+                >
+                  View All Courses
+                </Link>
+              </li>
             </ul>
           </div>
 

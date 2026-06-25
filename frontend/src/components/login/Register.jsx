@@ -1,3 +1,4 @@
+import { API_URL } from "../../config/api";
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bot, Eye, EyeOff, User, Mail, Lock, ArrowRight, GraduationCap, Users, BookOpen, Briefcase, Calendar, MapPin, Phone, CheckCircle, XCircle, Clock, ChevronLeft, ChevronRight, Shield, AtSign } from "lucide-react";
@@ -106,7 +107,6 @@ const Register = () => {
     }
   };
 
-
   // Send OTP function
   const sendOTP = async () => {
     if (!formData.email) {
@@ -121,7 +121,7 @@ const Register = () => {
       setLoading(true);
       setOtpError("");
 
-      const res = await fetch("http://localhost:5000/api/auth/send-otp", {
+      const res = await fetch(`${API_URL}/auth/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -171,7 +171,7 @@ const Register = () => {
       setLoading(true);
       setOtpError("");
 
-      const res = await fetch("http://localhost:5000/api/auth/verify-otp", {
+      const res = await fetch(`${API_URL}/auth/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -204,7 +204,6 @@ const Register = () => {
     }
   };
 
-
   // Resend OTP
   const resendOTP = async () => {
     if (resendTimer > 0) return;
@@ -216,7 +215,7 @@ const Register = () => {
       setLoading(true);
       setOtpError("");
 
-      const res = await fetch("http://localhost:5000/api/auth/send-otp", {
+      const res = await fetch(`${API_URL}/auth/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -338,7 +337,7 @@ const Register = () => {
         } : undefined
       };
 
-      const res = await fetch("http://localhost:5000/api/auth/register", {
+      const res = await fetch(`${API_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -352,14 +351,13 @@ const Register = () => {
         return;
       }
 
-      // ✅ Save JWT
-      localStorage.setItem("token", data.token);
-
       setLoading(false);
 
       if (formData.userType === "student") {
+        localStorage.setItem("token", data.token);
         navigate("/index");
       } else {
+        localStorage.setItem("instructor_token", data.token);
         navigate("/instructor-dashboard");
       }
 
@@ -764,7 +762,7 @@ const Register = () => {
                   <div className="text-center mt-4">
                     <p className="text-gray-600 text-xs">
                       Already have an account?{" "}
-                      <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200">
+                      <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200">
                         Sign in
                       </Link>
                     </p>
@@ -912,7 +910,7 @@ const Register = () => {
                     <div className="text-center mt-4">
                       <p className="text-gray-600 text-xs">
                         Already have an account?{" "}
-                        <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200">
+                        <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200">
                           Sign in
                         </Link>
                       </p>

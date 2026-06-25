@@ -14,14 +14,23 @@ export const protect = async (req, res, next) => {
             // Attach user info to request (id and role)
             req.user = decoded;
 
-            next();
+            return next();
         } catch (error) {
             console.error(error);
-            res.status(401).json({ message: 'Not authorized, token failed' });
+            return res.status(401).json({ message: 'Not authorized, token failed' });
         }
     }
 
     if (!token) {
-        res.status(401).json({ message: 'Not authorized, no token' });
+        return res.status(401).json({ message: 'Not authorized, no token' });
+    }
+};
+
+export const isInstructor = (req, res, next) => {
+    if (req.user && req.user.role && req.user.role.toLowerCase() === 'instructor') {
+        next();
+    } else {
+        console.warn(`[Auth] Access denied for user ${req.user?.id} on path ${req.path}. Role: ${req.user?.role}`);
+        res.status(403).json({ message: 'Not authorized as an instructor' });
     }
 };

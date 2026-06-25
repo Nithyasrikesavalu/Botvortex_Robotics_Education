@@ -76,15 +76,16 @@ const SignIn = () => {
         return;
       }
 
-      localStorage.setItem("token", data.token); // Store token
-      localStorage.setItem("user", JSON.stringify(data.user)); // Store user info
-
-      // Navigate based on role
+      // Navigate based on role and store tokens separately
       if (data.user.role === "student") {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
         navigate('/index', {
           state: { email: formData.email, role: "student" }
         });
       } else {
+        localStorage.setItem("instructor_token", data.token);
+        localStorage.setItem("instructor_user", JSON.stringify(data.user));
         navigate('/instructor-dashboard', {
           state: { email: formData.email, role: "instructor" }
         });

@@ -1,634 +1,1140 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { API_URL } from "../../config/api";
+import React, { useState, useEffect, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   BookOpen,
-  Clock,
-  Trophy,
-  Search,
-  Filter,
-  Award,
-  ChevronRight,
-  Play,
-  CheckCircle,
-  Activity,
-  TrendingUp,
-  Calendar,
-  MoreVertical,
-  Download,
-  Layout,
-  ExternalLink,
-  Flame,
   User,
-  Star,
-  Coins
+  Award,
+  Settings as SettingsIcon,
+  LogOut,
+  Search,
+  Shield,
+  Lock,
+  CreditCard,
+  ChevronRight,
+  Download,
+  Mail,
+  Phone,
+  MapPin,
+  Globe,
+  Menu,
+  X,
+  CheckCircle,
+  AlertCircle,
+  RefreshCw,
+  Edit,
+  Upload,
+  BookOpenCheck,
+  Bell,
+  Play
 } from "lucide-react";
 
-const Sparkline = ({ values = [], width = 120, height = 36 }) => {
-  if (!values.length) return null;
-  const max = Math.max(...values, 1);
-  const min = Math.min(...values, 0);
-  const step = width / (values.length - 1 || 1);
-  const points = values
-    .map((v, i) => {
-      const x = i * step;
-      const y = height - ((v - min) / (max - min || 1)) * height;
-      return `${x},${y}`;
-    })
-    .join(" ");
-  return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="inline-block">
-      <defs>
-        <linearGradient id="sparklineGradient" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#3b82f6" />
-          <stop offset="100%" stopColor="#1e40af" />
-        </linearGradient>
-      </defs>
-      <polyline fill="none" stroke="url(#sparklineGradient)" strokeWidth="2" points={points} strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-};
+/* ─────────────────────────────────────────────────────────────
+   Sub-components & Helpers
+   ───────────────────────────────────────────────────────────── */
 
-const PremiumProgressBar = ({ value = 0, color = "blue" }) => {
-  const colors = {
-    blue: "from-blue-600 to-indigo-600",
-    green: "from-emerald-500 to-teal-600",
-    purple: "from-purple-500 to-violet-600"
-  };
+const Switch = ({ enabled, onChange }) => (
+  <button
+    type="button"
+    onClick={() => onChange(!enabled)}
+    className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${enabled ? "bg-blue-600" : "bg-slate-200"
+      }`}
+  >
+    <span
+      className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${enabled ? "translate-x-5" : "translate-x-1"
+        }`}
+    />
+  </button>
+);
 
-  return (
-    <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden shadow-inner">
-      <motion.div
-        initial={{ width: 0 }}
-        animate={{ width: `${Math.min(100, value)}%` }}
-        transition={{ duration: 1, ease: "easeOut" }}
-        className={`h-2.5 rounded-full bg-gradient-to-r ${colors[color]} shadow-lg`}
+const InputField = ({ label, value, onChange, type = "text", placeholder, icon: Icon, disabled = false }) => (
+  <div className="space-y-1.5 w-full">
+    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{label}</label>
+    <div className="relative">
+      {Icon && (
+        <Icon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+      )}
+      <input
+        type={type}
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        disabled={disabled}
+        className={`w-full border border-slate-200 rounded-xl py-2.5 text-sm text-slate-800 placeholder-slate-400 bg-white outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all ${Icon ? "pl-10 pr-4" : "px-4"
+          } ${disabled ? "bg-slate-50 text-slate-400 cursor-not-allowed" : ""}`}
       />
     </div>
-  );
-};
+  </div>
+);
 
-const BotVortexMyCourses = () => {
+const SelectField = ({ label, value, onChange, options, disabled = false }) => (
+  <div className="space-y-1.5 w-full">
+    {label && (
+      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{label}</label>
+    )}
+    <select
+      value={value || ""}
+      onChange={(e) => onChange(e.target.value)}
+      disabled={disabled}
+      className={`w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 bg-white outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all cursor-pointer ${disabled ? "bg-slate-50 text-slate-400 cursor-not-allowed" : ""
+        }`}
+    >
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>{o.label}</option>
+      ))}
+    </select>
+  </div>
+);
+
+const TextAreaField = ({ label, value, onChange, placeholder, disabled = false }) => (
+  <div className="space-y-1.5 w-full">
+    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{label}</label>
+    <textarea
+      value={value || ""}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      disabled={disabled}
+      rows={3}
+      className={`w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 bg-white outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all ${disabled ? "bg-slate-50 text-slate-400 cursor-not-allowed" : ""
+        }`}
+    />
+  </div>
+);
+
+const SectionDivider = ({ title }) => (
+  <div className="flex items-center gap-3 pt-4 pb-2">
+    <span className="text-xs font-bold uppercase tracking-widest text-blue-600">{title}</span>
+    <div className="flex-1 h-px bg-slate-100" />
+  </div>
+);
+
+const ToggleRow = ({ label, description, enabled, onChange }) => (
+  <div className="flex items-center justify-between py-3.5 border-b border-slate-100 last:border-0">
+    <div className="pr-4">
+      <p className="text-sm font-semibold text-slate-800">{label}</p>
+      {description && <p className="text-xs text-slate-500 mt-0.5">{description}</p>}
+    </div>
+    <Switch enabled={enabled} onChange={onChange} />
+  </div>
+);
+
+const InfoRow = ({ section, field, label, value, editMode, handleChange }) => (
+  <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 py-3 border-b border-slate-100 hover:bg-slate-50/50 transition-all duration-150 rounded-lg px-2">
+    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider min-w-[180px] flex items-center">
+      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2.5 shrink-0"></span>
+      {label}
+    </span>
+    {editMode ? (
+      <input
+        className="flex-1 text-sm border border-slate-200 bg-white px-3 py-1.5 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all"
+        value={value || ""}
+        onChange={(e) => handleChange(section, field, e.target.value)}
+      />
+    ) : (
+      <span className="flex-1 text-sm text-slate-800 font-medium bg-slate-50/50 px-3 py-1.5 rounded-lg border border-transparent">
+        {value || "N/A"}
+      </span>
+    )}
+  </div>
+);
+
+const ProgressBar = ({ value = 0 }) => (
+  <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+    <div
+      className="h-2 rounded-full bg-blue-600 transition-all duration-500"
+      style={{ width: `${value}%` }}
+    />
+  </div>
+);
+
+/* ─────────────────────────────────────────────────────────────
+   Main Component
+   ───────────────────────────────────────────────────────────── */
+
+const BotVortexMyCourses = ({ defaultTab = "courses" }) => {
+  const navigate = useNavigate();
+
+  const [activeTab, setActiveTab] = useState(defaultTab);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Data States — all from API
   const [enrolled, setEnrolled] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState({
-    name: "Student",
-    role: "BotVortex Student",
-    year: "1st Year",
-    email: "",
-    phone: "",
-    avatar: "",
-    totalLearningHours: 12,
-    coins: 0
-  });
+  const [profileData, setProfileData] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [courseFilter, setCourseFilter] = useState("all");
 
-  const [filter, setFilter] = useState("all");
-  const [search, setSearch] = useState("");
-  const [showCertificatesOnly, setShowCertificatesOnly] = useState(false);
+  // Profile
+  const [profileEditMode, setProfileEditMode] = useState(false);
+  const [profileTab, setProfileTab] = useState("personal");
+
+  // Toast
+  const [saveStatus, setSaveStatus] = useState({ show: false, type: "", message: "" });
+
+  // Settings (loaded from API)
+  const [settings, setSettings] = useState({
+    profile: { firstName: "", lastName: "", email: "", phone: "", bio: "", location: "", website: "", language: "English", timezone: "IST (UTC+5:30)" },
+    account: { username: "", twoFactorAuth: false },
+    privacy: { profileVisibility: "public", showProgress: true, showAchievements: true, showCourses: true, dataSharing: false, searchVisibility: true },
+    notifications: { emailNotifications: true, pushNotifications: false, smsNotifications: true, courseUpdates: true, securityAlerts: true },
+    learning: { autoPlayVideos: false, subtitles: true, darkMode: false, focusMode: true, weeklyGoals: true, goalHours: 10, defaultPlaybackSpeed: "1.0x" },
+    payment: { plan: "pro", cardNumber: "", expiryDate: "", cardHolder: "", billingAddress: "", autoRenew: true }
+  });
 
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0 });
+    setActiveTab(defaultTab);
+  }, [defaultTab]);
 
-    const loadData = async () => {
-      try {
-        const token = localStorage.getItem("token");
+  /* ── Load all data from API ── */
+  const loadDashboardData = async () => {
+    const token = localStorage.getItem("token");
+    const storedUser = JSON.parse(localStorage.getItem("user"));
 
-        if (!token) {
-          window.location.href = "/signup";
-          return;
-        }
+    if (!token || !storedUser) { navigate("/login"); return; }
+    if (storedUser.role === "instructor") { window.location.replace("/instructor-dashboard"); return; }
 
-        const profileRes = await fetch("http://localhost:5000/api/student/profile", {
-          headers: { Authorization: `Bearer ${token}` }
+    try {
+      const profileRes = await fetch(`${API_URL}/student/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (profileRes.ok) {
+        const data = await profileRes.json();
+        setProfileData(data);
+
+        const [first, ...rest] = (data.fullName || storedUser.fullName || "").split(" ");
+        setSettings({
+          profile: {
+            firstName: data.personal?.firstName || first || "",
+            lastName: data.personal?.lastName || rest.join(" ") || "",
+            email: data.personal?.email || storedUser.email || "",
+            phone: data.personal?.phone || storedUser.phone || "",
+            bio: data.personal?.bio || "",
+            location: data.personal?.location || "",
+            website: data.personal?.website || "",
+            language: data.personal?.language || "English",
+            timezone: data.personal?.timezone || "IST (UTC+5:30)"
+          },
+          account: { username: data.personal?.studentAccount || storedUser.username || "", twoFactorAuth: data.settings?.account?.twoFactorAuth || false },
+          privacy: {
+            profileVisibility: data.settings?.privacy?.profileVisibility || "public",
+            showProgress: data.settings?.privacy?.showProgress !== false,
+            showAchievements: data.settings?.privacy?.showAchievements !== false,
+            showCourses: data.settings?.privacy?.showCourses !== false,
+            dataSharing: data.settings?.privacy?.dataSharing || false,
+            searchVisibility: data.settings?.privacy?.searchVisibility !== false
+          },
+          notifications: {
+            emailNotifications: data.settings?.notifications?.emailNotifications !== false,
+            pushNotifications: data.settings?.notifications?.pushNotifications || false,
+            smsNotifications: data.settings?.notifications?.smsNotifications || false,
+            courseUpdates: data.settings?.notifications?.courseUpdates !== false,
+            securityAlerts: data.settings?.notifications?.securityAlerts !== false
+          },
+          learning: {
+            autoPlayVideos: data.settings?.learning?.autoPlayVideos || false,
+            subtitles: data.settings?.learning?.subtitles !== false,
+            darkMode: data.settings?.learning?.darkMode || false,
+            focusMode: data.settings?.learning?.focusMode || false,
+            weeklyGoals: data.settings?.learning?.weeklyGoals !== false,
+            goalHours: data.settings?.learning?.goalHours || 10,
+            defaultPlaybackSpeed: data.settings?.learning?.defaultPlaybackSpeed || "1.0x"
+          },
+          payment: {
+            plan: data.settings?.payment?.plan || "pro",
+            cardNumber: data.settings?.payment?.cardNumber || "",
+            expiryDate: data.settings?.payment?.expiryDate || "",
+            cardHolder: data.settings?.payment?.cardHolder || "",
+            billingAddress: data.settings?.payment?.billingAddress || "",
+            autoRenew: data.settings?.payment?.autoRenew !== false
+          }
         });
-
-        if (profileRes.ok) {
-          const profileData = await profileRes.json();
-          const storedUser = JSON.parse(localStorage.getItem("user")) || {};
-
-          setUserData(prev => ({
-            ...prev,
-            name: profileData.fullName || profileData.personal?.name || storedUser.fullName || "Student",
-            role: profileData.academic?.currentYear || storedUser.role || "BotVortex Student",
-            year: profileData.education?.collegeName || "Enrolled Student",
-            email: profileData.personal?.email || storedUser.email,
-            phone: profileData.personal?.phone || storedUser.phone || "N/A",
-            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.fullName || profileData.personal?.name || storedUser.fullName || 'User')}&background=0D8ABC&color=fff&bold=true`,
-            coins: profileData.coins || 0
-          }));
-        }
-
-        const courseRes = await fetch("http://localhost:5000/api/student/courses", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (courseRes.ok) {
-          const data = await courseRes.json();
-          setEnrolled(data);
-        }
-      } catch (error) {
-        console.error("Error loading data:", error);
-      } finally {
-        setLoading(false);
       }
-    };
 
-    loadData();
-  }, []);
+      const courseRes = await fetch(`${API_URL}/student/courses`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (courseRes.ok) {
+        const data = await courseRes.json();
+        setEnrolled(data);
+      }
+    } catch (error) {
+      console.error("Dashboard fetch error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => { loadDashboardData(); }, []);
+
+  /* ── Derived stats ── */
   const totals = useMemo(() => {
     const total = enrolled.length;
-    const inProg = enrolled.filter((c) => c.progress < 100).length;
     const completed = enrolled.filter((c) => c.progress >= 100).length;
     const certs = enrolled.filter((c) => c.certificate).length;
-    const avgProgress = Math.round(enrolled.reduce((s, c) => s + c.progress, 0) / Math.max(1, total));
-    return { total, inProg, completed, certs, avgProgress };
+    return { total, completed, certs };
   }, [enrolled]);
 
-  const filtered = enrolled.filter((c) => {
-    if (showCertificatesOnly && !c.certificate) return false;
-    if (filter === "inprogress" && c.progress >= 100) return false;
-    if (filter === "completed" && c.progress < 100) return false;
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return (
-      c.title.toLowerCase().includes(q) ||
-      (c.instructor && c.instructor.toLowerCase().includes(q)) ||
-      (c.courseId && c.courseId.toLowerCase().includes(q))
-    );
-  });
+  /* ── Filtered courses ── */
+  const filteredCourses = useMemo(() => {
+    return enrolled.filter((c) => {
+      const matchesSearch =
+        c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.instructor?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.courseId?.toLowerCase().includes(searchQuery.toLowerCase());
+      if (!matchesSearch) return false;
+      if (courseFilter === "inprogress") return c.progress < 100;
+      if (courseFilter === "completed") return c.progress >= 100;
+      return true;
+    });
+  }, [enrolled, searchQuery, courseFilter]);
 
-  const handleUpdateProgress = async (courseId, delta) => {
-    const token = localStorage.getItem("token");
-    const course = enrolled.find(c => c.courseId === courseId);
-    if (!course) return;
-
-    const newProgress = Math.min(100, Math.max(0, course.progress + delta));
-
-    try {
-      const response = await fetch(`http://localhost:5000/api/student/courses/${courseId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ progress: newProgress })
-      });
-
-      if (response.ok) {
-        setEnrolled((prev) =>
-          prev.map((c) => (c.courseId === courseId ? { ...c, progress: newProgress } : c))
-        );
-      }
-    } catch (error) {
-      console.error("Error updating progress:", error);
-    }
+  /* ── Profile handlers ── */
+  const handleProfileChange = (section, field, value) => {
+    setProfileData((prev) => ({ ...prev, [section]: { ...prev[section], [field]: value } }));
   };
 
-  const handleMarkComplete = async (courseId) => {
+  const handleSaveProfile = async () => {
     const token = localStorage.getItem("token");
+    if (!token) return;
+    setSaveStatus({ show: true, type: "loading", message: "Saving changes…" });
+    const names = (profileData.personal?.name || "").trim().split(" ");
+    const payload = { ...profileData, personal: { ...profileData.personal, firstName: names[0] || "", lastName: names.slice(1).join(" ") || "" } };
     try {
-      const response = await fetch(`http://localhost:5000/api/student/courses/${courseId}`, {
+      const res = await fetch(`${API_URL}/student/profile`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ progress: 100, certificate: true, status: 'completed' })
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
       });
-
-      if (response.ok) {
-        setEnrolled((prev) =>
-          prev.map((c) => (c.courseId === courseId ? { ...c, progress: 100, certificate: true } : c))
-        );
+      if (res.ok) {
+        const stored = JSON.parse(localStorage.getItem("user") || "{}");
+        stored.fullName = profileData.personal?.name;
+        localStorage.setItem("user", JSON.stringify(stored));
+        window.dispatchEvent(new Event("storage"));
+        setSaveStatus({ show: true, type: "success", message: "Profile updated successfully!" });
+        setProfileEditMode(false);
+      } else {
+        setSaveStatus({ show: true, type: "error", message: "Failed to update profile." });
       }
-    } catch (error) {
-      console.error("Error marking complete:", error);
+    } catch {
+      setSaveStatus({ show: true, type: "error", message: "Error updating profile." });
     }
+    setTimeout(() => setSaveStatus({ show: false, type: "", message: "" }), 3000);
   };
 
+  /* ── Settings handler ── */
+  const handleSettingChange = (section, field, value) => {
+    setSettings((prev) => ({ ...prev, [section]: { ...prev[section], [field]: value } }));
+  };
+
+  const handleSaveSettings = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    setSaveStatus({ show: true, type: "loading", message: "Saving settings…" });
+    const payload = {
+      personal: {
+        firstName: settings.profile.firstName,
+        lastName: settings.profile.lastName,
+        email: settings.profile.email,
+        phone: settings.profile.phone,
+        bio: settings.profile.bio,
+        location: settings.profile.location,
+        website: settings.profile.website,
+        language: settings.profile.language,
+        timezone: settings.profile.timezone,
+        name: `${settings.profile.firstName} ${settings.profile.lastName}`.trim()
+      },
+      settings: {
+        account: settings.account,
+        privacy: settings.privacy,
+        notifications: settings.notifications,
+        learning: settings.learning,
+        payment: settings.payment
+      }
+    };
+    try {
+      const res = await fetch(`${API_URL}/student/profile`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        const stored = JSON.parse(localStorage.getItem("user") || "{}");
+        stored.fullName = payload.personal.name;
+        localStorage.setItem("user", JSON.stringify(stored));
+        window.dispatchEvent(new Event("storage"));
+        setSaveStatus({ show: true, type: "success", message: "Settings saved successfully." });
+        loadDashboardData();
+      } else {
+        setSaveStatus({ show: true, type: "error", message: "Failed to save settings." });
+      }
+    } catch {
+      setSaveStatus({ show: true, type: "error", message: "Network error. Please try again." });
+    }
+    setTimeout(() => setSaveStatus({ show: false, type: "", message: "" }), 3000);
+  };
+
+  /* ── Certificate download ── */
   const handleDownloadCertificate = (course) => {
+    const name = profileData?.fullName || profileData?.personal?.name || JSON.parse(localStorage.getItem("user"))?.fullName || "Student";
     const html = `
       <html><head><title>Certificate - ${course.title}</title>
       <style>
-        body { margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; background: #f0f4f8; font-family: 'Inter', sans-serif; }
-        .cert { width: 800px; padding: 60px; background: white; border: 20px solid #1e3a8a; position: relative; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
-        .cert::before { content: ""; position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px; border: 2px solid #3b82f6; pointer-events: none; }
-        h1 { color: #1e3a8a; font-size: 48px; margin-bottom: 10px; text-transform: uppercase; }
-        h2 { color: #3b82f6; font-size: 24px; margin-bottom: 40px; }
-        .name { font-size: 36px; font-weight: bold; color: #111; margin: 20px 0; border-bottom: 2px solid #ccc; display: inline-block; padding: 0 40px; }
-        .desc { font-size: 18px; color: #555; margin-bottom: 40px; }
-        .footer { display: flex; justify-content: space-between; margin-top: 60px; }
-        .sig { border-top: 1px solid #333; width: 200px; padding-top: 10px; font-size: 14px; }
-      </style>
-      </head>
+        body { margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; background: #f8fafc; font-family: 'Inter', sans-serif; }
+        .cert { width: 800px; padding: 60px; background: white; border: 20px solid #f1f5f9; text-align: center; box-shadow: 0 10px 30px -5px rgb(0 0 0 / 0.08); border-radius: 12px; position: relative; }
+        .cert-inner { border: 2px solid #e2e8f0; padding: 40px; }
+        .logo { font-size: 24px; font-weight: 800; color: #0f172a; margin-bottom: 20px; letter-spacing: -1px; }
+        .logo span { color: #2563eb; }
+        h1 { color: #0f172a; font-size: 38px; margin-bottom: 10px; font-weight: 700; }
+        h2 { color: #64748b; font-size: 16px; margin-bottom: 30px; font-weight: 400; text-transform: uppercase; letter-spacing: 2px; }
+        .name { font-size: 32px; font-weight: 700; color: #0f172a; margin: 20px 0; border-bottom: 2px solid #2563eb; display: inline-block; padding: 0 50px 10px; }
+        .desc { font-size: 15px; color: #64748b; margin-bottom: 30px; line-height: 1.6; }
+        .footer { display: flex; justify-content: space-between; margin-top: 50px; }
+        .sig { border-top: 1px solid #e2e8f0; width: 180px; padding-top: 10px; font-size: 13px; color: #64748b; font-weight: 500; }
+        .badge-cert { width: 80px; height: 80px; background: #eff6ff; border-radius: 50%; border: 4px solid #dbeafe; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+      </style></head>
       <body>
-        <div class="cert">
-          <h1>Certificate</h1>
-          <h2>of Completion</h2>
-          <p class="desc">This is to certify that</p>
-          <div class="name">${userData.name}</div>
-          <p class="desc">has successfully completed the course</p>
-          <div style="font-size: 28px; font-weight: bold; color: #1e3a8a; margin-bottom: 20px;">${course.title}</div>
-          <p class="desc">with an outstanding grade of <strong>A</strong></p>
+        <div class="cert"><div class="cert-inner">
+          <div class="logo">Bot<span>Vortex</span></div>
+          <div class="badge-cert"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+          <h1>Certificate of Achievement</h1>
+          <h2>This is proudly presented to</h2>
+          <div class="name">${name}</div>
+          <p class="desc">for successfully completing all requirements associated with<br>
+          <strong style="color: #0f172a; font-size: 18px;">${course.title}</strong></p>
           <div class="footer">
             <div class="sig">Program Director</div>
             <div class="sig">BotVortex Academy<br/>${new Date().toLocaleDateString()}</div>
           </div>
-        </div>
-      </body>
-      </html>
-    `;
+        </div></div>
+      </body></html>`;
     const win = window.open("", "_blank");
-    if (win) {
-      win.document.write(html);
-      win.document.close();
-    } else {
-      alert("Popup blocked — allow popups to view certificate preview.");
-    }
+    if (win) { win.document.write(html); win.document.close(); }
+    else alert("Popup blocked — allow popups to view certificate.");
   };
 
+  /* ── Demo init ── */
   const handleInitDemo = async () => {
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch("http://localhost:5000/api/student/courses/init-demo", {
+      const response = await fetch(`${API_URL}/student/courses/init-demo`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (response.ok) {
-        // Refetch courses after demo init
-        const fetchResponse = await fetch("http://localhost:5000/api/student/courses", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (fetchResponse.ok) {
-          setEnrolled(await fetchResponse.json());
-        }
-      }
-    } catch (err) {
-      console.error(err);
-    }
+      if (response.ok) loadDashboardData();
+    } catch (err) { console.error(err); }
   };
 
+  /* ── Delete account ── */
+  const handleDeleteAccount = async () => {
+    if (!window.confirm("This will permanently delete your account and all enrolled courses. This action cannot be undone.")) return;
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`${API_URL}/student/profile`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) { localStorage.clear(); navigate("/"); window.location.reload(); }
+      else alert("Failed to delete account.");
+    } catch { alert("Error connecting to server."); }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/");
+    window.location.reload();
+  };
+
+  /* ── Loading state ── */
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
-        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-slate-600 font-medium animate-pulse">Loading your learning portal...</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
+  const studentName = profileData?.fullName || profileData?.personal?.name || "Student";
+  const studentInitials = studentName.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase() || "ST";
+
+  /* ── Sidebar menu — only real data tabs ── */
+  const menuItems = [
+    { id: "courses", label: "My Courses", icon: BookOpen },
+    { id: "certificates", label: "Certificates", icon: Award },
+    { id: "dashboard", label: "My Dashboard", icon: User },
+    { id: "settings", label: "Settings", icon: SettingsIcon }
+  ];
+
+  const handleTabClick = (tabId) => {
+    setActiveTab(tabId);
+    setMobileMenuOpen(false);
+    if (tabId === "courses" || tabId === "certificates") navigate("/my-courses");
+    else if (tabId === "dashboard") navigate("/dashboard");
+    else if (tabId === "settings") navigate("/settings");
+  };
+
+  /* ════════════════════════════════════════════════════════════
+     RENDER
+     ════════════════════════════════════════════════════════════ */
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 font-sans transition-all duration-500">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-[#F8FAFC] flex font-sans text-slate-800">
 
-        {/* PREMIUM DASHBOARD HEADER */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 md:p-10"
-        >
-          {/* Decorative Backdrops */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl -mr-32 -mt-32 opacity-60"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl -ml-32 -mb-32 opacity-60"></div>
+      {/* ── Save Toast ── */}
+      {saveStatus.show && (
+        <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl border text-sm font-semibold transition-all duration-200 ${saveStatus.type === "success" ? "bg-white border-emerald-100 text-emerald-700" :
+            saveStatus.type === "error" ? "bg-white border-red-100 text-red-600" :
+              "bg-white border-blue-100 text-blue-600"
+          }`}>
+          {saveStatus.type === "success" && <CheckCircle size={16} className="text-emerald-500" />}
+          {saveStatus.type === "error" && <AlertCircle size={16} className="text-red-500" />}
+          {saveStatus.type === "loading" && <RefreshCw size={16} className="animate-spin text-blue-500" />}
+          {saveStatus.message}
+        </div>
+      )}
 
-          <div className="relative flex flex-col lg:flex-row items-center justify-between gap-8">
-            <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
-              <div className="relative">
-                <div className="absolute inset-0 bg-blue-600 rounded-full blur-lg opacity-20 animate-pulse"></div>
-                <img
-                  src={userData.avatar}
-                  alt="Avatar"
-                  className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-xl relative z-10"
-                />
-                <div className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full z-20"></div>
-              </div>
-              <div>
-                <div className="flex items-center gap-2 justify-center md:justify-start">
-                  <h1 className="text-3xl font-extrabold text-[#1E293B] tracking-tight">{userData.name}</h1>
-                  <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">PRO</span>
-                </div>
-                <p className="text-blue-600 font-semibold mt-1 flex items-center gap-2 justify-center md:justify-start">
-                  <Layout size={16} className="text-blue-500" />
-                  {userData.role} • {userData.year}
-                </p>
-                <div className="text-slate-400 text-sm mt-1">{userData.email}</div>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-4 w-full lg:w-auto">
-              <div className="bg-slate-50/80 backdrop-blur-md rounded-2xl p-4 min-w-[140px] text-center border border-slate-100 hover:shadow-md transition-all">
-                <p className="text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">Total Hours</p>
-                <div className="flex items-center justify-center gap-2">
-                  <Clock size={18} className="text-blue-600" />
-                  <p className="text-2xl font-black text-slate-800">{userData.totalLearningHours}h</p>
-                </div>
-              </div>
-              <div className="bg-[#FFD700]/10 backdrop-blur-md rounded-2xl p-4 min-w-[140px] text-center border border-[#FFD700]/10 hover:shadow-md transition-all group">
-                <p className="text-xs text-[#B8860B] uppercase font-bold tracking-widest mb-1">My Coins</p>
-                <Link to="/buy-coins" className="flex items-center justify-center gap-2">
-                  <Coins size={20} className="text-[#FFD700] group-hover:scale-110 transition-transform" />
-                  <p className="text-2xl font-black text-slate-800">{userData.coins.toLocaleString()}</p>
-                </Link>
-              </div>
-              <div className="bg-slate-50/80 backdrop-blur-md rounded-2xl p-4 min-w-[140px] text-center border border-slate-100 hover:shadow-md transition-all">
-                <p className="text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">Consistency</p>
-                <div className="flex flex-col items-center">
-                  <p className="text-2xl font-black text-slate-800">{totals.avgProgress}%</p>
-                  <div className="mt-1"><Sparkline values={enrolled.map(c => c.progress)} /></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* STATS TILES & FILTERS */}
-        <div className="flex flex-col xl:flex-row gap-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-1">
-            {[
-              { label: "Enrolled", val: totals.total, icon: BookOpen, color: "text-blue-600", bg: "bg-blue-50" },
-              { label: "Ongoing", val: totals.inProg, icon: Activity, color: "text-orange-600", bg: "bg-orange-50" },
-              { label: "Done", val: totals.completed, icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-50" },
-              { label: "Badges", val: totals.certs, icon: Trophy, color: "text-purple-600", bg: "bg-purple-50" }
-            ].map((stat, i) => (
-              <motion.div
-                key={i}
-                whileHover={{ y: -5 }}
-                className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col"
-              >
-                <div className={`${stat.bg} ${stat.color} w-10 h-10 rounded-xl flex items-center justify-center mb-3`}>
-                  <stat.icon size={20} />
-                </div>
-                <p className="text-sm font-semibold text-slate-500">{stat.label}</p>
-                <p className="text-2xl font-bold text-slate-800 mt-1">{stat.val}</p>
-              </motion.div>
-            ))}
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full xl:w-auto">
-            <div className="relative group flex-1 min-w-[240px]">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
-              <input
-                placeholder="Search courses..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-4 py-3 outline-none focus:ring-4 focus:ring-blue-50/50 focus:border-blue-400 transition-all text-slate-700"
-              />
-            </div>
-            <div className="flex gap-2">
-              <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                className="bg-white border border-slate-200 rounded-2xl px-4 py-3 outline-none text-slate-700 font-medium focus:ring-4 focus:ring-blue-50/50 cursor-pointer"
-              >
-                <option value="all">Overview</option>
-                <option value="inprogress">Active</option>
-                <option value="completed">Finished</option>
-              </select>
-              <button
-                onClick={() => setShowCertificatesOnly(!showCertificatesOnly)}
-                className={`px-4 py-3 rounded-2xl border transition-all flex items-center gap-2 font-medium ${showCertificatesOnly
-                  ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200"
-                  : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
-                  }`}
-              >
-                <Award size={18} />
-                <span className="hidden sm:inline">Certified</span>
-              </button>
-            </div>
-          </div>
+      {/* ── Desktop Sidebar ── */}
+      <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-slate-200 shrink-0 sticky top-0 h-screen z-20">
+        <div className="h-16 flex items-center px-6 border-b border-slate-100 gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg">B</div>
+          <span className="font-extrabold text-xl text-[#0F172A] tracking-tight">BotVortex</span>
         </div>
 
-        {/* MAIN CONTENT AREA */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleTabClick(item.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${isActive ? "bg-[#EFF6FF] text-[#0F172A] border-l-4 border-[#2563EB]" : "text-[#64748B] hover:bg-slate-50 hover:text-[#0F172A]"
+                  }`}
+              >
+                <Icon size={18} className={isActive ? "text-[#2563EB]" : "text-[#64748B]"} />
+                <span className="flex-1 text-left">{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
 
-          {/* COURSE LISTING (8 cols) */}
-          <div className="lg:col-span-8 space-y-6">
-            <AnimatePresence mode="popLayout">
-              {filtered.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="bg-white rounded-3xl p-12 shadow-sm border border-slate-100 text-center"
-                >
-                  <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <BookOpen size={40} className="text-blue-300" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-slate-800 mb-2">Ready to start?</h3>
-                  <p className="text-slate-500 max-w-sm mx-auto mb-8">Your learning journey begins here. Explore our world-class robotics curriculum.</p>
+        <div className="p-4 border-t border-slate-100">
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-rose-600 hover:bg-rose-50 transition-colors">
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
 
-                  {enrolled.length === 0 && (
-                    <button
-                      onClick={handleInitDemo}
-                      className="mb-4 bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3.5 rounded-2xl font-bold shadow-xl shadow-emerald-100 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 mx-auto"
-                    >
-                      Initialize Demo Courses <Play size={20} fill="white" />
-                    </button>
-                  )}
-
-                  <Link
-                    to="/Courses"
-                    className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3.5 rounded-2xl font-bold shadow-xl shadow-blue-100 transition-all hover:scale-105 active:scale-95"
+      {/* ── Mobile Sidebar Drawer ── */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-40 flex">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
+          <aside className="relative flex flex-col w-72 max-w-xs bg-white h-full shadow-2xl z-50">
+            <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg">B</div>
+                <span className="font-extrabold text-xl text-[#0F172A] tracking-tight">BotVortex</span>
+              </div>
+              <button onClick={() => setMobileMenuOpen(false)} className="p-1 rounded-lg hover:bg-slate-100 text-slate-500">
+                <X size={20} />
+              </button>
+            </div>
+            <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleTabClick(item.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${isActive ? "bg-[#EFF6FF] text-[#0F172A] border-l-4 border-[#2563EB]" : "text-[#64748B] hover:bg-slate-50 hover:text-[#0F172A]"
+                      }`}
                   >
-                    Browse Catalog <ChevronRight size={20} />
-                  </Link>
-                </motion.div>
-              ) : (
-                filtered.map((course) => (
-                  <motion.div
-                    layout
-                    key={course.courseId}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="group relative bg-white rounded-3xl p-5 md:p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-slate-100 hover:border-blue-200 hover:shadow-xl transition-all duration-300 overflow-hidden"
-                  >
-                    {/* Progress Background Decoration */}
-                    <div
-                      className="absolute left-0 top-0 bottom-0 bg-blue-50/30 transition-all duration-500 pointer-events-none"
-                      style={{ width: `${course.progress}%` }}
-                    />
-
-                    <div className="relative flex flex-col md:flex-row gap-6">
-                      {/* Thumbnail/Icon */}
-                      <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-[#1E40AF] to-[#3B82F6] flex items-center justify-center text-3xl shadow-lg shadow-blue-200 shrink-0 transform group-hover:rotate-6 transition-transform">
-                        <span className="filter drop-shadow-md">{course.thumbnailEmoji || "🚀"}</span>
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-                          <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded uppercase tracking-widest">{course.courseId}</span>
-                              {course.progress >= 100 && (
-                                <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded uppercase">
-                                  <CheckCircle size={10} /> Certified
-                                </span>
-                              )}
-                            </div>
-                            <h3 className="font-extrabold text-xl text-slate-800 group-hover:text-blue-700 transition-colors truncate">{course.title}</h3>
-                            <p className="text-sm text-slate-500 font-medium flex items-center gap-1 mt-1">
-                              <User size={14} className="text-slate-400" /> {course.instructor || "BotVortex Instructor"}
-                            </p>
-                          </div>
-
-                          <div className="flex items-center gap-3">
-                            <div className="bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100 text-center min-w-[70px]">
-                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Progress</p>
-                              <p className="text-sm font-black text-slate-800">{course.progress}%</p>
-                            </div>
-                            <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
-                              <MoreVertical size={20} />
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="mt-6 flex flex-col md:flex-row items-center gap-6">
-                          <div className="w-full space-y-3">
-                            <div className="flex justify-between items-end">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">CURRICULUM</span>
-                                <span className="text-xs font-black text-blue-600 italic">{course.completedLessons || 0}/{course.totalLessons || 10} LESSONS</span>
-                              </div>
-                              <span className="text-[10px] text-slate-400 font-bold">{course.lastActive ? `Last active: ${new Date(course.lastActive).toLocaleDateString()}` : "Active now"}</span>
-                            </div>
-                            <PremiumProgressBar value={course.progress} color={course.progress >= 100 ? "green" : "blue"} />
-                          </div>
-                        </div>
-
-                        <div className="mt-6 pt-6 border-t border-slate-50 flex flex-wrap items-center justify-between gap-4">
-                          <div className="flex gap-2">
-                            <Link
-                              to='/CoursesModule'
-                              className="inline-flex items-center gap-2 bg-slate-900 hover:bg-black text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg active:scale-95"
-                            >
-                              <Play size={16} fill="white" /> {course.progress > 0 ? "Continue" : "Start"}
-                            </Link>
-                            <button
-                              onClick={() => handleUpdateProgress(course.courseId, 10)}
-                              className="p-2.5 text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-100 rounded-xl transition-all"
-                              title="Update Progress"
-                            >
-                              <TrendingUp size={20} />
-                            </button>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            {course.certificate && (
-                              <button
-                                onClick={() => handleDownloadCertificate(course)}
-                                className="inline-flex items-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-4 py-2.5 rounded-xl font-bold text-sm transition-all border border-emerald-100"
-                              >
-                                <Download size={16} /> Certificate
-                              </button>
-                            )}
-                            {course.progress < 100 && (
-                              <button
-                                onClick={() => handleMarkComplete(course.courseId)}
-                                className="text-blue-600 hover:underline font-bold text-sm px-2 cursor-pointer"
-                              >
-                                Mark Complete
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))
-              )}
-            </AnimatePresence>
-
-            {/* CTA BANNER */}
-            <div className="bg-gradient-to-br from-indigo-900 to-blue-900 rounded-[2.5rem] p-8 md:p-12 text-center relative overflow-hidden shadow-2xl shadow-blue-200">
-              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
-              <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400 rounded-full blur-[100px] opacity-20 -mr-32 -mt-32"></div>
-              <div className="relative z-10">
-                <div className="bg-blue-500/20 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10">
-                  <Flame size={32} className="text-orange-400" />
-                </div>
-                <h4 className="text-2xl md:text-3xl font-black text-white mb-3">Push Your Boundaries!</h4>
-                <p className="text-blue-100 max-w-md mx-auto mb-8 font-medium">Daily practice is the key to mastery. Earn exclusive badges by completing modules this week.</p>
-                <div className="flex flex-wrap justify-center gap-4">
-                  <Link to="/Courses" className="bg-white text-blue-900 px-10 py-4 rounded-[1.2rem] font-black hover:bg-blue-50 transition-all hover:scale-105 active:scale-95 shadow-xl">
-                    View New Arrivals
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* SIDEBAR (4 cols) */}
-          <aside className="lg:col-span-4 space-y-8">
-
-            {/* PROGRESS OVERVIEW */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-              <div className="flex items-center justify-between mb-6">
-                <h4 className="font-extrabold text-slate-800 flex items-center gap-2">
-                  <Activity size={20} className="text-blue-600" /> Mastery Lab
-                </h4>
-                <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">LIVE FEED</span>
-              </div>
-
-              <div className="space-y-6">
-                {enrolled.slice(0, 4).map((c) => (
-                  <div key={c.courseId} className="group flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-black text-slate-800 truncate max-w-[150px]">{c.title}</p>
-                      <span className={`text-[10px] font-bold ${c.certificate ? "text-emerald-500" : "text-slate-400"}`}>
-                        {c.certificate ? "VERIFIED" : `${c.progress}%`}
-                      </span>
-                    </div>
-                    <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all duration-1000 ${c.certificate ? "bg-emerald-500" : "bg-blue-500"}`}
-                        style={{ width: `${c.progress}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* UPCOMING EVENTS */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-              <h4 className="font-extrabold text-slate-800 flex items-center gap-2 mb-6">
-                <Calendar size={20} className="text-blue-600" /> Vortex Events
-              </h4>
-              <div className="space-y-4">
-                {[
-                  { title: "Robotics Seminar", date: "Tomorrow, 10 AM", type: "Live" },
-                  { title: "AI Workshop", date: "Friday, 2 PM", type: "Hands-on" }
-                ].map((event, i) => (
-                  <div key={i} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-colors cursor-pointer border border-transparent hover:border-slate-100">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                      <TrendingUp size={18} className="text-blue-600" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-slate-800 truncate">{event.title}</p>
-                      <p className="text-[10px] font-medium text-slate-500">{event.date} • {event.type}</p>
-                    </div>
-                    <ChevronRight size={14} className="ml-auto text-slate-300" />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* QUICK LINKS */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-              <h4 className="font-extrabold text-slate-800 flex items-center gap-2 mb-4">
-                <ExternalLink size={20} className="text-blue-600" /> Resources
-              </h4>
-              <div className="grid grid-cols-2 gap-2">
-                {["Documentation", "Community", "Support", "API"].map((link) => (
-                  <button key={link} className="text-left p-3 rounded-xl bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-700 text-xs font-bold transition-all border border-transparent hover:border-blue-100">
-                    {link}
+                    <Icon size={18} className={isActive ? "text-[#2563EB]" : "text-[#64748B]"} />
+                    <span className="flex-1 text-left">{item.label}</span>
                   </button>
-                ))}
-              </div>
+                );
+              })}
+            </nav>
+            <div className="p-4 border-t border-slate-100">
+              <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-rose-600 hover:bg-rose-50 transition-colors">
+                <LogOut size={18} /><span>Logout</span>
+              </button>
             </div>
           </aside>
         </div>
+      )}
+
+      {/* ── Main Content ── */}
+      <div className="flex-1 flex flex-col min-w-0 max-w-full overflow-x-hidden">
+
+        {/* Header */}
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 shrink-0 sticky top-0 z-30">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setMobileMenuOpen(true)} className="lg:hidden p-1.5 rounded-lg hover:bg-slate-100 text-[#0F172A]">
+              <Menu size={22} />
+            </button>
+            {/* Search bar — filters courses when on courses tab */}
+            <div className="relative w-48 sm:w-64 md:w-80 max-w-md hidden sm:block">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                placeholder="Search courses..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-full pl-9 pr-4 py-1.5 outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600 transition-all text-xs font-medium text-slate-700"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 md:gap-5">
+            <div
+              onClick={() => handleTabClick("profile")}
+              className="flex items-center gap-3 pl-3 border-l border-slate-200 cursor-pointer"
+            >
+              <div className="w-9 h-9 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md shadow-blue-100 overflow-hidden shrink-0 border border-blue-100">
+                {profileData?.avatar ? (
+                  <img src={profileData.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                ) : studentInitials}
+              </div>
+              <div className="hidden md:block text-left">
+                <p className="text-xs font-bold text-slate-800 leading-none">{studentName}</p>
+                <p className="text-[10px] font-semibold text-slate-400 mt-1 uppercase tracking-wider">Student</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full space-y-6 md:space-y-8">
+
+          {/* ══════════════ 1. MY COURSES ══════════════ */}
+          {activeTab === "courses" && (
+            <div className="space-y-6 md:space-y-8">
+
+              {/* Summary Strip */}
+              <div className="grid grid-cols-3 gap-4">
+                {[
+                  { label: "Enrolled", value: totals.total, color: "bg-blue-50 text-blue-700" },
+                  { label: "Completed", value: totals.completed, color: "bg-emerald-50 text-emerald-700" },
+                  { label: "Certificates", value: totals.certs, color: "bg-amber-50 text-amber-700" }
+                ].map((stat) => (
+                  <div key={stat.label} className={`rounded-2xl px-5 py-4 ${stat.color} flex flex-col gap-1`}>
+                    <span className="text-2xl font-extrabold">{stat.value}</span>
+                    <span className="text-xs font-bold uppercase tracking-wider opacity-70">{stat.label}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Header + Filters */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-extrabold text-[#0F172A] tracking-tight">My Courses</h2>
+                  <p className="text-sm text-[#64748B] mt-1 font-medium">Your enrolled courses from BotVortex</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <select
+                    value={courseFilter}
+                    onChange={(e) => setCourseFilter(e.target.value)}
+                    className="bg-white border border-slate-200 rounded-xl px-4 py-2 outline-none text-xs font-semibold text-slate-700 focus:border-blue-600 cursor-pointer shadow-sm"
+                  >
+                    <option value="all">All Courses</option>
+                    <option value="inprogress">In Progress</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                  <Link
+                    to="/Courses"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm"
+                  >
+                    Explore Catalog <ChevronRight size={14} />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Course Grid */}
+              {filteredCourses.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
+                  <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <BookOpenCheck size={26} />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">No courses found</h3>
+                  <p className="text-slate-500 mb-8 max-w-sm mx-auto text-sm font-medium">
+                    {enrolled.length === 0
+                      ? "You haven't enrolled in any courses yet. Browse the catalog to get started!"
+                      : "No courses match your current filter."}
+                  </p>
+                  {enrolled.length === 0 && (
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <Link
+                        to="/Courses"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm inline-flex items-center gap-2"
+                      >
+                        Browse Courses <ChevronRight size={14} />
+                      </Link>
+                      <button
+                        onClick={handleInitDemo}
+                        className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-xl font-bold transition-all inline-flex items-center gap-2 text-xs shadow-sm"
+                      >
+                        Load Demo Courses <Play size={14} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredCourses.map((course) => (
+                    <div
+                      key={course.courseId}
+                      className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 flex flex-col h-full"
+                    >
+                      {/* Thumbnail */}
+                      <div className="h-36 bg-slate-50 border-b border-slate-100 flex items-center justify-center relative shrink-0">
+                        <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-3xl shadow-sm border border-blue-100">
+                          {course.thumbnailEmoji || "🎓"}
+                        </div>
+                        <span className="absolute top-4 left-4 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                          {course.courseId}
+                        </span>
+                        {course.progress >= 100 && (
+                          <span className="absolute top-4 right-4 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                            Completed
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-5 flex-1 flex flex-col justify-between">
+                        <div className="space-y-2">
+                          <h3 className="font-bold text-slate-900 text-base line-clamp-1" title={course.title}>
+                            {course.title}
+                          </h3>
+                          <p className="text-xs text-slate-400 font-medium flex items-center gap-1.5">
+                            <User size={13} className="text-slate-400" />
+                            {course.instructor || "BotVortex Instructor"}
+                          </p>
+
+                          {/* Progress */}
+                          <div className="pt-2">
+                            <div className="flex justify-between items-center text-xs font-semibold mb-1.5">
+                              <span className="text-slate-700">{course.progress}% Completed</span>
+                              <span className="text-slate-400">
+                                {course.completedLessons || 0}/{course.totalLessons || 10} Lessons
+                              </span>
+                            </div>
+                            <ProgressBar value={course.progress} />
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="mt-5 pt-4 border-t border-slate-100 flex gap-2">
+                          <Link
+                            to="/CoursesModule"
+                            className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl text-xs font-bold transition-all"
+                          >
+                            {course.progress > 0 ? "Continue Learning" : "Start Course"}
+                          </Link>
+                          {course.certificate && (
+                            <button
+                              onClick={() => handleDownloadCertificate(course)}
+                              className="bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 p-2 rounded-xl transition-all"
+                              title="Download Certificate"
+                            >
+                              <Download size={14} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ══════════════ 2. CERTIFICATES ══════════════ */}
+          {activeTab === "certificates" && (
+            <div className="space-y-6 md:space-y-8">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-[#0F172A] tracking-tight">Certificates</h2>
+                <p className="text-sm text-[#64748B] mt-1 font-medium">Your earned certificates from completed courses</p>
+              </div>
+
+              {enrolled.filter(c => c.certificate).length === 0 ? (
+                <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
+                  <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Award size={26} />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">No certificates yet</h3>
+                  <p className="text-slate-500 mb-6 max-w-sm mx-auto text-sm font-medium">
+                    Complete a course (reach 100% progress) to earn your certificate.
+                  </p>
+                  <button
+                    onClick={() => handleTabClick("courses")}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm"
+                  >
+                    View My Courses
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {enrolled.filter(c => c.certificate).map((course) => (
+                    <div
+                      key={course.courseId}
+                      className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col"
+                    >
+                      <div className="h-40 bg-slate-50 flex items-center justify-center border-b border-slate-100 relative">
+                        <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center text-xl shadow-sm">
+                          🏆
+                        </div>
+                        <span className="absolute top-4 left-4 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                          Certified
+                        </span>
+                      </div>
+                      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                        <div>
+                          <h3 className="font-bold text-slate-900 text-base line-clamp-1">{course.title}</h3>
+                          <p className="text-xs text-slate-400 font-medium mt-1">
+                            Issued by BotVortex Academy · {new Date().toLocaleDateString()}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleDownloadCertificate(course)}
+                          className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                        >
+                          <Download size={14} /> Download Certificate
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ══════════════ 3. MY PROFILE ══════════════ */}
+          {activeTab === "dashboard" && (
+            <div className="space-y-6 md:space-y-8">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-extrabold text-[#0F172A] tracking-tight">My Dashboard</h2>
+                  <p className="text-sm text-[#64748B] mt-1 font-medium">Overview of your dashboard and quick actions</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Left Card */}
+                <div className="lg:col-span-4 space-y-6">
+                  <div className="bg-white rounded-2xl border border-slate-200 p-6 text-center shadow-sm flex flex-col items-center">
+                    <div className="relative mb-4">
+                      <div className="w-24 h-24 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-3xl font-extrabold shadow-inner border border-slate-200 overflow-hidden">
+                        {profileData?.avatar ? (
+                          <img src={profileData.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : studentInitials}
+                      </div>
+                      {profileEditMode && (
+                        <button className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-md border-2 border-white transition-all" title="Change Avatar">
+                          <Upload size={14} />
+                        </button>
+                      )}
+                    </div>
+                    <h3 className="font-extrabold text-lg text-slate-900 leading-tight">{studentName}</h3>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mt-1">
+                      {profileData?.personal?.role || "Student"}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1 font-medium">
+                      {profileData?.personal?.email || JSON.parse(localStorage.getItem("user"))?.email}
+                    </p>
+
+                    <div className="w-full h-px bg-slate-100 my-6" />
+
+                    {/* Stats */}
+                    <div className="w-full grid grid-cols-3 gap-3 text-center">
+                      <div className="bg-blue-50 rounded-xl p-3">
+                        <p className="text-lg font-extrabold text-blue-700">{totals.total}</p>
+                        <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wider mt-0.5">Courses</p>
+                      </div>
+                      <div className="bg-emerald-50 rounded-xl p-3">
+                        <p className="text-lg font-extrabold text-emerald-700">{totals.completed}</p>
+                        <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider mt-0.5">Done</p>
+                      </div>
+                      <div className="bg-amber-50 rounded-xl p-3">
+                        <p className="text-lg font-extrabold text-amber-700">{totals.certs}</p>
+                        <p className="text-[10px] font-bold text-amber-500 uppercase tracking-wider mt-0.5">Certs</p>
+                      </div>
+                    </div>
+
+                    <div className="w-full mt-6">
+                      {!profileEditMode ? (
+                        <button
+                          onClick={() => setProfileEditMode(true)}
+                          className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                        >
+                          <Edit size={14} /> Edit Profile
+                        </button>
+                      ) : (
+                        <div className="flex gap-2">
+                          <button onClick={() => setProfileEditMode(false)} className="flex-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 py-2.5 rounded-xl text-xs font-bold transition-all">
+                            Cancel
+                          </button>
+                          <button onClick={handleSaveProfile} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-xs font-bold transition-all">
+                            Save
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Card */}
+                <div className="lg:col-span-8">
+                  <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col h-full">
+                    <div className="flex border-b border-slate-100 pb-3 gap-2 overflow-x-auto shrink-0">
+                      {[
+                        { id: "personal", label: "Personal Info" },
+                        { id: "education", label: "Education" },
+                        { id: "academic", label: "Academic" }
+                      ].map((tab) => (
+                        <button
+                          key={tab.id}
+                          onClick={() => setProfileTab(tab.id)}
+                          className={`text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-xl transition-all whitespace-nowrap ${profileTab === tab.id ? "bg-blue-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                            }`}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex-1 py-6 space-y-2">
+                      {profileTab === "personal" && profileData?.personal && (
+                        <div className="space-y-1">
+                          {Object.keys(profileData.personal).map((key) => {
+                            if (["firstName", "lastName"].includes(key)) return null;
+                            return (
+                              <InfoRow
+                                key={key}
+                                section="personal"
+                                field={key}
+                                label={key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase())}
+                                value={profileData.personal[key]}
+                                editMode={profileEditMode}
+                                handleChange={handleProfileChange}
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
+                      {profileTab === "education" && profileData?.education && (
+                        <div className="space-y-1">
+                          {Object.keys(profileData.education).map((key) => (
+                            <InfoRow
+                              key={key}
+                              section="education"
+                              field={key}
+                              label={key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase())}
+                              value={profileData.education[key]}
+                              editMode={profileEditMode}
+                              handleChange={handleProfileChange}
+                            />
+                          ))}
+                        </div>
+                      )}
+                      {profileTab === "academic" && profileData?.academic && (
+                        <div className="space-y-1">
+                          {Object.keys(profileData.academic).map((key) => (
+                            <InfoRow
+                              key={key}
+                              section="academic"
+                              field={key}
+                              label={key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase())}
+                              value={profileData.academic[key]}
+                              editMode={profileEditMode}
+                              handleChange={handleProfileChange}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ══════════════ 4. SETTINGS ══════════════ */}
+          {activeTab === "settings" && (
+            <div className="space-y-6 md:space-y-8">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-[#0F172A] tracking-tight">Settings</h2>
+                <p className="text-sm text-[#64748B] mt-1 font-medium">Manage your account preferences and security</p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Left nav */}
+                <div className="lg:col-span-4">
+                  <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col gap-1.5 sticky top-24">
+                    {[
+                      { id: "profile", label: "Personal Info", icon: User },
+                      { id: "account", label: "Security & Account", icon: Lock },
+                      { id: "privacy", label: "Privacy & Data", icon: Shield },
+                      { id: "notifications", label: "Notification Settings", icon: Bell },
+                      { id: "learning", label: "Preferences & Playback", icon: BookOpen },
+                      { id: "payment", label: "Billing & Plans", icon: CreditCard }
+                    ].map((tab) => {
+                      const Icon = tab.icon;
+                      const isActive = profileTab === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => setProfileTab(tab.id)}
+                          className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${isActive ? "bg-blue-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                            }`}
+                        >
+                          <Icon size={14} />
+                          <span>{tab.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Right form */}
+                <div className="lg:col-span-8">
+                  <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6 flex flex-col h-full">
+                    <div className="space-y-6">
+
+                      {profileTab === "profile" && (
+                        <div className="space-y-4">
+                          <h3 className="font-bold text-slate-800 text-base">Personal Details</h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <InputField label="First Name" value={settings.profile.firstName} onChange={(v) => handleSettingChange("profile", "firstName", v)} placeholder="First Name" />
+                            <InputField label="Last Name" value={settings.profile.lastName} onChange={(v) => handleSettingChange("profile", "lastName", v)} placeholder="Last Name" />
+                          </div>
+                          <InputField label="Email Address" value={settings.profile.email} onChange={(v) => handleSettingChange("profile", "email", v)} placeholder="email@example.com" icon={Mail} />
+                          <InputField label="Phone Number" value={settings.profile.phone} onChange={(v) => handleSettingChange("profile", "phone", v)} placeholder="Phone Number" icon={Phone} />
+                          <TextAreaField label="Biography" value={settings.profile.bio} onChange={(v) => handleSettingChange("profile", "bio", v)} placeholder="Write a short summary about yourself..." />
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <InputField label="Location" value={settings.profile.location} onChange={(v) => handleSettingChange("profile", "location", v)} placeholder="City, Country" icon={MapPin} />
+                            <InputField label="Personal Website" value={settings.profile.website} onChange={(v) => handleSettingChange("profile", "website", v)} placeholder="https://example.com" icon={Globe} />
+                          </div>
+                        </div>
+                      )}
+
+                      {profileTab === "account" && (
+                        <div className="space-y-4">
+                          <h3 className="font-bold text-slate-800 text-base">Account Security</h3>
+                          <InputField label="Username" value={settings.account.username} onChange={() => { }} placeholder="Username" disabled />
+                          <SectionDivider title="Authentication" />
+                          <ToggleRow
+                            label="Two-Factor Authentication"
+                            description="Add an extra layer of security using SMS or authenticator app."
+                            enabled={settings.account.twoFactorAuth}
+                            onChange={(v) => handleSettingChange("account", "twoFactorAuth", v)}
+                          />
+                          <SectionDivider title="Danger Zone" />
+                          <div className="p-4 rounded-xl border border-red-100 bg-red-50/30 space-y-4">
+                            <div>
+                              <h4 className="text-xs font-bold text-red-700 uppercase tracking-widest">Delete Account</h4>
+                              <p className="text-xs text-slate-500 mt-1 font-medium">
+                                Once deleted, your enrollment data, coins and certificates will be permanently wiped.
+                              </p>
+                            </div>
+                            <button
+                              onClick={handleDeleteAccount}
+                              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm"
+                            >
+                              Delete Permanently
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {profileTab === "privacy" && (
+                        <div className="space-y-4">
+                          <h3 className="font-bold text-slate-800 text-base">Privacy Settings</h3>
+                          <SelectField
+                            label="Profile Visibility"
+                            value={settings.privacy.profileVisibility}
+                            onChange={(v) => handleSettingChange("privacy", "profileVisibility", v)}
+                            options={[
+                              { value: "public", label: "Public — Accessible by instructors & students" },
+                              { value: "private", label: "Private — Visible only to yourself" }
+                            ]}
+                          />
+                          <SectionDivider title="Data Sharing" />
+                          <ToggleRow label="Share progress with instructors" description="Let course coordinators review your module progress." enabled={settings.privacy.showProgress} onChange={(v) => handleSettingChange("privacy", "showProgress", v)} />
+                          <ToggleRow label="Show achievements in leaderboard" description="Showcase earned trophies to challenge other learners." enabled={settings.privacy.showAchievements} onChange={(v) => handleSettingChange("privacy", "showAchievements", v)} />
+                          <ToggleRow label="Visible in search" description="Allow indexing of your developer achievements." enabled={settings.privacy.searchVisibility} onChange={(v) => handleSettingChange("privacy", "searchVisibility", v)} />
+                        </div>
+                      )}
+
+                      {profileTab === "notifications" && (
+                        <div className="space-y-4">
+                          <h3 className="font-bold text-slate-800 text-base">Notification Preferences</h3>
+                          <ToggleRow label="Email Notifications" description="Receive system communications and course news." enabled={settings.notifications.emailNotifications} onChange={(v) => handleSettingChange("notifications", "emailNotifications", v)} />
+                          <ToggleRow label="Push Notifications" description="Instant updates inside the dashboard." enabled={settings.notifications.pushNotifications} onChange={(v) => handleSettingChange("notifications", "pushNotifications", v)} />
+                          <ToggleRow label="SMS Security Alerts" description="Alerts for critical security events." enabled={settings.notifications.smsNotifications} onChange={(v) => handleSettingChange("notifications", "smsNotifications", v)} />
+                          <ToggleRow label="Course Updates" description="Notifications when instructors update course content." enabled={settings.notifications.courseUpdates} onChange={(v) => handleSettingChange("notifications", "courseUpdates", v)} />
+                        </div>
+                      )}
+
+                      {profileTab === "learning" && (
+                        <div className="space-y-4">
+                          <h3 className="font-bold text-slate-800 text-base">Learning Preferences</h3>
+                          <SelectField
+                            label="Default Playback Speed"
+                            value={settings.learning.defaultPlaybackSpeed}
+                            onChange={(v) => handleSettingChange("learning", "defaultPlaybackSpeed", v)}
+                            options={[
+                              { value: "0.75x", label: "0.75x (Slower)" },
+                              { value: "1.0x", label: "1.0x (Normal)" },
+                              { value: "1.25x", label: "1.25x (Fast)" },
+                              { value: "1.5x", label: "1.5x (Faster)" },
+                              { value: "2.0x", label: "2.0x (Very Fast)" }
+                            ]}
+                          />
+                          <ToggleRow label="Autoplay videos" description="Automatically load next module video." enabled={settings.learning.autoPlayVideos} onChange={(v) => handleSettingChange("learning", "autoPlayVideos", v)} />
+                          <ToggleRow label="Subtitles & Closed Captions" description="Show transcripts below video files." enabled={settings.learning.subtitles} onChange={(v) => handleSettingChange("learning", "subtitles", v)} />
+                          <ToggleRow label="Focus Mode" description="Collapse navigation sidebars during video sessions." enabled={settings.learning.focusMode} onChange={(v) => handleSettingChange("learning", "focusMode", v)} />
+                        </div>
+                      )}
+
+                      {profileTab === "payment" && (
+                        <div className="space-y-4">
+                          <h3 className="font-bold text-slate-800 text-base">Billing Details</h3>
+                          <div className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                            <div>
+                              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Active Plan</p>
+                              <p className="text-sm font-bold text-slate-800 mt-1">BotVortex Pro Subscription</p>
+                            </div>
+                            <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-lg">Pro Member</span>
+                          </div>
+                          <InputField label="Card Holder Name" value={settings.payment.cardHolder} onChange={(v) => handleSettingChange("payment", "cardHolder", v)} placeholder="Name on card" />
+                          <InputField label="Card Number" value={settings.payment.cardNumber} onChange={(v) => handleSettingChange("payment", "cardNumber", v)} placeholder="xxxx xxxx xxxx xxxx" icon={CreditCard} />
+                          <div className="grid grid-cols-2 gap-4">
+                            <InputField label="Expiry Date" value={settings.payment.expiryDate} onChange={(v) => handleSettingChange("payment", "expiryDate", v)} placeholder="MM/YY" />
+                            <InputField label="Billing Address" value={settings.payment.billingAddress} onChange={(v) => handleSettingChange("payment", "billingAddress", v)} placeholder="Postal Code / Address" />
+                          </div>
+                        </div>
+                      )}
+
+                    </div>
+
+                    <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end shrink-0">
+                      <button
+                        onClick={handleSaveSettings}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm"
+                      >
+                        Save Settings
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </main>
       </div>
     </div>
   );

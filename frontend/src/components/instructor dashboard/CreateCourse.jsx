@@ -1,3 +1,4 @@
+import { API_URL } from "../../config/api";
 // import React, { useState } from "react";
 // import { Link, Links, useNavigate } from "react-router-dom";
 // import { 
@@ -138,7 +139,7 @@
 //           {step === 1 && (
 //             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
 //               <h2 className="text-2xl font-bold text-gray-900 mb-6">Course Information</h2>
-              
+
 //               <div className="space-y-6">
 //                 {/* Course Title */}
 //                 <div>
@@ -349,7 +350,7 @@
 //           {step === 2 && (
 //             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
 //               <h2 className="text-2xl font-bold text-gray-900 mb-6">Course Curriculum</h2>
-              
+
 //               <div className="space-y-6">
 //                 <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
 //                   <Video className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -399,7 +400,7 @@
 //           {step === 3 && (
 //             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
 //               <h2 className="text-2xl font-bold text-gray-900 mb-6">Pricing</h2>
-              
+
 //               <div className="space-y-6">
 //                 <div>
 //                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -461,10 +462,10 @@
 
 // export default CreateCourse;
 
-
 import React, { useState } from "react";
 import { Link, Links, useNavigate } from "react-router-dom";
-import { 
+import {
+
   Bot, ArrowLeft, Upload, X, Plus, Trash2,
   Video, FileText, Image, Settings, DollarSign, Coins
 } from "lucide-react";
@@ -472,7 +473,7 @@ import {
 const CreateCourse = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  
+
   // Combined state for all forms
   const [courseData, setCourseData] = useState({
     // Form 1 Data
@@ -487,7 +488,7 @@ const CreateCourse = () => {
     prerequisites: "",
     banner: null,
     syllabus: null,
-    
+
     // Form 2 Data
     modules: [{
       name: "",
@@ -495,13 +496,13 @@ const CreateCourse = () => {
       lessonFile: null,
       quizzes: [{ question: "", answer: "" }]
     }],
-    
+
     // Form 3 Data
     lessons: [{
       title: "",
       videoFile: null
     }],
-    
+
     // Pricing Data
     price: "",
     priceInCoins: 0,
@@ -612,12 +613,52 @@ const CreateCourse = () => {
     if (step > 1) setStep(step - 1);
   };
 
+  const [loading, setLoading] = useState(false);
+
   // Form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Course Data:", courseData);
-    alert("Course created successfully!");
-    navigate("/instructor-my-courses");
+    setLoading(true);
+
+    const token = localStorage.getItem("instructor_token");
+    if (!token) {
+      alert("Please login again");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const payload = {
+        title: courseData.title,
+        description: courseData.description,
+        level: courseData.level,
+        price: courseData.priceInCoins,
+        image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=250&fit=crop", // placeholder or handle upload
+        learnings: courseData.learningObjectives ? courseData.learningObjectives.split("\n") : []
+      };
+
+      const response = await fetch(`${API_URL}/instructor/courses`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        alert("Course created successfully!");
+        navigate("/instructor-my-courses");
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.message}`);
+      }
+    } catch (err) {
+      console.error("Error creating course:", err);
+      alert("Failed to create course. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -632,7 +673,7 @@ const CreateCourse = () => {
                 <span className="text-xl font-bold text-gray-900">BotVortex</span>
               </Link>
               <span className="text-gray-400">/</span>
-              <button 
+              <button
                 onClick={() => navigate("/instructor-my-courses")}
                 className="text-gray-600 hover:text-gray-900"
               >
@@ -651,25 +692,22 @@ const CreateCourse = () => {
           <div className="flex items-center justify-between">
             {[1, 2, 3, 4].map((stepNumber) => (
               <div key={stepNumber} className="flex items-center">
-                <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                  step >= stepNumber 
-                    ? "bg-purple-600 text-white" 
-                    : "bg-gray-200 text-gray-600"
-                }`}>
+                <div className={`flex items-center justify-center w-8 h-8 rounded-full ${step >= stepNumber
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-200 text-gray-600"
+                  }`}>
                   {stepNumber}
                 </div>
-                <span className={`ml-2 text-sm font-medium ${
-                  step >= stepNumber ? "text-purple-600" : "text-gray-500"
-                }`}>
+                <span className={`ml-2 text-sm font-medium ${step >= stepNumber ? "text-purple-600" : "text-gray-500"
+                  }`}>
                   {stepNumber === 1 && "Basic Info"}
                   {stepNumber === 2 && "Curriculum"}
                   {stepNumber === 3 && "Content"}
                   {stepNumber === 4 && "Pricing"}
                 </span>
                 {stepNumber < 4 && (
-                  <div className={`w-16 h-0.5 mx-4 ${
-                    step > stepNumber ? "bg-purple-600" : "bg-gray-200"
-                  }`} />
+                  <div className={`w-16 h-0.5 mx-4 ${step > stepNumber ? "bg-purple-600" : "bg-gray-200"
+                    }`} />
                 )}
               </div>
             ))}
@@ -1206,12 +1244,13 @@ const CreateCourse = () => {
                     <ArrowLeft className="w-4 h-4" />
                     Back to Content
                   </button>
-                  <Link to={'/instructor-dashboard'}
+                  <button
                     type="submit"
-                    className="bg-white text-purple-700 px-6 py-3 rounded-xl font-bold hover:bg-white/90 transition"
+                    disabled={loading}
+                    className="bg-white text-purple-700 px-6 py-3 rounded-xl font-bold hover:bg-white/90 transition disabled:opacity-50"
                   >
-                    Create Course
-                  </Link>
+                    {loading ? "Creating..." : "Create Course"}
+                  </button>
                 </div>
               </div>
             </div>

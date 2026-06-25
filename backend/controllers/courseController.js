@@ -23,16 +23,18 @@ export const getCourseById = async (req, res) => {
 // Admin helper to seed courses initially
 export const seedCourses = async (req, res) => {
     try {
-        const { courses } = req.body;
+        const { courses, instructorId } = req.body;
         if (!courses || !Array.isArray(courses)) {
             return res.status(400).json({ message: "Invalid course data" });
         }
 
-        // Add courseId if missing (slugified title)
+        // Add courseId if missing (slugified title) and assign instructor
         const coursesWithIds = courses.map(course => ({
             ...course,
+            instructor: instructorId || course.instructor,
             courseId: course.courseId || course.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]/g, ''),
-            thumbnailEmoji: course.thumbnailEmoji || "🚀"
+            thumbnailEmoji: course.thumbnailEmoji || "🚀",
+            id: course.id || Math.floor(Math.random() * 1000000) // Temporary random numeric ID if missing
         }));
 
         const result = await Course.insertMany(coursesWithIds);

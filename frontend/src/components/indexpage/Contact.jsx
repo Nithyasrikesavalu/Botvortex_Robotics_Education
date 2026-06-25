@@ -1,6 +1,8 @@
+import { API_URL } from "../../config/api";
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
+
   Mail,
   Phone,
   MapPin,
@@ -36,7 +38,7 @@ const ContactPage = () => {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/contact/submit", {
+      const res = await fetch(`${API_URL}/contact/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)

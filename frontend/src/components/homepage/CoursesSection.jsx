@@ -5,12 +5,12 @@ import { Bot, Zap, ArrowRight, Star, Clock, Users, BookOpen, Cpu, Brain, Rocket 
 
 const CoursesSection = () => {
 
-    useEffect(() => {
-      window.scrollTo({
-        top: 0,
-        left: 0,
-      });
-    }, []);
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+    });
+  }, []);
   const courseLevels = [
     {
       level: "Beginner",
@@ -55,7 +55,7 @@ const CoursesSection = () => {
   ];
 
   return (
-    <section  className="py-20 bg-gradient-to-br from-[#0B1426] to-[#0F1B2E]">
+    <section id="courses" className="py-20 bg-gradient-to-br from-[#0B1426] to-[#0F1B2E]">
       <div className="max-w-7xl mx-auto px-6">
         {/* Section Header */}
         <motion.div
@@ -136,7 +136,7 @@ const CoursesSection = () => {
 
                   {/* Progress Bar */}
                   <div className="w-full bg-white/5 rounded-full h-2">
-                    <div 
+                    <div
                       className={`h-2 rounded-full bg-gradient-to-r ${course.color} transition-all duration-1000`}
                       style={{ width: `${(index + 1) * 30}%` }}
                     ></div>
@@ -153,7 +153,7 @@ const CoursesSection = () => {
               className="text-center lg:text-left"
             >
               <Link
-                to="/login"
+                to="/Courses"
                 className="inline-flex items-center gap-3 bg-gradient-to-r from-[#00C3FF] to-[#8A5DFF] text-white px-8 py-4 rounded-2xl font-bold hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
               >
                 <BookOpen className="w-5 h-5" />

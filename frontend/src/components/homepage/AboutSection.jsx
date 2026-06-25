@@ -38,15 +38,15 @@ const AboutSection = () => {
   const closeVideo = () => {
     setShowVideo(false);
   };
-  
-    useEffect(() => {
-      window.scrollTo({
-        top: 0,
-        left: 0,
-      });
-    }, []);
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+    });
+  }, []);
   return (
-    <section className="py-20 bg-gradient-to-br from-gray-50 to-white relative">
+    <section id="features" className="py-20 bg-gradient-to-br from-gray-50 to-white relative">
       {/* Video Modal */}
       {showVideo && (
         <motion.div
@@ -67,12 +67,12 @@ const AboutSection = () => {
             >
               <X className="w-6 h-6 text-white" />
             </button>
-            
+
             <div className="aspect-video">
               {/* Use video element instead of iframe for local files */}
-              <video 
-                controls 
-                autoPlay 
+              <video
+                controls
+                autoPlay
                 className="w-full h-full"
                 onEnded={closeVideo}
               >
@@ -116,7 +116,7 @@ const AboutSection = () => {
             className="flex-1"
           >
             <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-2 shadow-2xl cursor-pointer group"
-                 onClick={openVideo}>
+              onClick={openVideo}>
               {/* Video Thumbnail with Play Button */}
               <div className="bg-gray-900 rounded-xl p-6">
                 <div className="aspect-video bg-gradient-to-br from-[#00C3FF]/20 to-[#8A5DFF]/20 rounded-lg flex items-center justify-center relative overflow-hidden group-hover:from-[#00C3FF]/30 group-hover:to-[#8A5DFF]/30 transition-all duration-300">
@@ -125,7 +125,7 @@ const AboutSection = () => {
                     <div className="absolute top-1/4 left-1/4 w-20 h-20 bg-[#00C3FF] rounded-full blur-xl"></div>
                     <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-[#8A5DFF] rounded-full blur-xl"></div>
                   </div>
-                  
+
                   {/* Play Button */}
                   <div className="text-center text-white z-10 transform group-hover:scale-110 transition-transform duration-300">
                     <div className="w-16 h-16 bg-gradient-to-r from-[#00C3FF] to-[#8A5DFF] rounded-full flex items-center justify-center mx-auto mb-4 shadow-2xl group-hover:shadow-3xl group-hover:from-[#00C3FF] group-hover:to-[#8A5DFF] transition-all duration-300">
@@ -141,7 +141,7 @@ const AboutSection = () => {
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg"></div>
                 </div>
               </div>
-              
+
               {/* Floating Elements */}
               <div className="absolute -top-3 -right-3 w-6 h-6 bg-[#00C3FF] rounded-full group-hover:scale-125 transition-transform"></div>
               <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-[#8A5DFF] rounded-full group-hover:scale-125 transition-transform"></div>
@@ -165,12 +165,12 @@ const AboutSection = () => {
             <h3 className="text-2xl font-bold mb-6 bg-gradient-to-r from-[#00C3FF] to-[#8A5DFF] bg-clip-text text-transparent">
               The Future of Robotics Learning is Here
             </h3>
-            
+
             <div className="space-y-4 mb-8">
               <p className="text-lg leading-relaxed">
                 BotVortex is an advanced robotics learning platform designed to bridge the gap between theoretical concepts and real-world applications. We combine AI-powered guidance with hands-on projects to create an immersive learning experience.
               </p>
-              
+
               <p className="text-lg leading-relaxed">
                 Our intelligent AI tutor monitors your progress, provides real-time feedback, and adapts the curriculum to your learning style. Whether you're building your first circuit or developing complex autonomous systems, BotVortex guides you every step of the way.
               </p>

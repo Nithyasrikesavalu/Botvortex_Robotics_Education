@@ -1,6 +1,7 @@
+import { API_URL } from "../../config/api";
 
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Save,
   Upload,
@@ -9,27 +10,14 @@ import {
   MessageSquare,
   TrendingUp,
   Users,
-  LogOut
+  LogOut,
+  User as UserIconLucide
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const UserIcon = () => (
-  <svg
-    className="w-4 h-4"
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-    />
-  </svg>
-);
+const UserIcon = () => <UserIconLucide className="w-4 h-4" />;
 
-const SettingsContent = ({ email }) => {
+const SettingsContent = ({ user }) => {
   const [activeTab, setActiveTab] = useState("profile");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -39,19 +27,33 @@ const SettingsContent = ({ email }) => {
   ];
 
   const [profileData, setProfileData] = useState({
-    name: "John Doe",
-    email: email,
-    bio: "Experienced instructor with passion for teaching and technology.",
-    expertise: "Web Development, React, Node.js",
-    website: "https://johndoe.com",
-    phone: "+1 (555) 123-4567",
-    location: "San Francisco, CA"
+    name: user?.fullName || "",
+    email: user?.email || "",
+    bio: user?.instructorDetails?.bio || "Expert robotics instructor at BotVortex.",
+    expertise: user?.instructorDetails?.expertise || "",
+    website: user?.instructorDetails?.website || "",
+    phone: user?.instructorDetails?.phone || "",
+    location: user?.instructorDetails?.location || "India"
   });
+
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        name: user.fullName || "",
+        email: user.email || "",
+        bio: user.instructorDetails?.bio || "Expert robotics instructor at BotVortex.",
+        expertise: user.instructorDetails?.expertise || "",
+        website: user.instructorDetails?.website || "",
+        phone: user.instructorDetails?.phone || "",
+        location: user.instructorDetails?.location || "India"
+      });
+    }
+  }, [user]);
 
   const [notificationSettings, setNotificationSettings] = useState({
     emailNotifications: true,
     studentMessages: true,
-    courseUpdates: false,
+    courseUpdates: true,
     marketingEmails: false,
     pushNotifications: true,
     weeklyReports: true
@@ -59,11 +61,40 @@ const SettingsContent = ({ email }) => {
 
   const handleSave = async () => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
+    const token = localStorage.getItem("instructor_token");
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${API_URL}/instructor/settings`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          fullName: profileData.name,
+          instructorDetails: {
+            expertise: profileData.expertise,
+            website: profileData.website,
+            phone: profileData.phone,
+            location: profileData.location,
+            bio: profileData.bio
+          }
+        })
+      });
+
+      if (response.ok) {
+        const updatedUser = await response.json();
+        localStorage.setItem("instructor_user", JSON.stringify(updatedUser));
+        alert("Settings updated successfully!");
+      }
+    } catch (err) {
+      console.error("Error updating settings:", err);
+      alert("Failed to update settings.");
+    } finally {
+      setIsLoading(false);
+    }
   };
-
-
 
   const toggleNotification = (setting) => {
     setNotificationSettings(prev => ({
@@ -218,7 +249,7 @@ const SettingsContent = ({ email }) => {
             <Mail className="w-4 h-4 text-purple-600" />
             Email Notifications
           </h4>
-          
+
           <div className="space-y-3">
             <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:border-purple-300 transition-all">
               <div>
@@ -226,11 +257,11 @@ const SettingsContent = ({ email }) => {
                 <p className="text-sm text-gray-600">New students, reviews, and progress</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={notificationSettings.courseUpdates}
                   onChange={() => toggleNotification('courseUpdates')}
-                  className="sr-only peer" 
+                  className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
               </label>
@@ -242,11 +273,11 @@ const SettingsContent = ({ email }) => {
                 <p className="text-sm text-gray-600">When students send you messages</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={notificationSettings.studentMessages}
                   onChange={() => toggleNotification('studentMessages')}
-                  className="sr-only peer" 
+                  className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
               </label>
@@ -258,11 +289,11 @@ const SettingsContent = ({ email }) => {
                 <p className="text-sm text-gray-600">Performance and earnings summary</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={notificationSettings.weeklyReports}
                   onChange={() => toggleNotification('weeklyReports')}
-                  className="sr-only peer" 
+                  className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
               </label>
@@ -276,7 +307,7 @@ const SettingsContent = ({ email }) => {
             <Bell className="w-4 h-4 text-blue-600" />
             Platform Notifications
           </h4>
-          
+
           <div className="space-y-3">
             <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:border-blue-300 transition-all">
               <div>
@@ -284,11 +315,11 @@ const SettingsContent = ({ email }) => {
                 <p className="text-sm text-gray-600">Browser and mobile push alerts</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={notificationSettings.pushNotifications}
                   onChange={() => toggleNotification('pushNotifications')}
-                  className="sr-only peer" 
+                  className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
@@ -300,11 +331,11 @@ const SettingsContent = ({ email }) => {
                 <p className="text-sm text-gray-600">Platform updates and promotions</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={notificationSettings.marketingEmails}
                   onChange={() => toggleNotification('marketingEmails')}
-                  className="sr-only peer" 
+                  className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
@@ -316,11 +347,11 @@ const SettingsContent = ({ email }) => {
                 <p className="text-sm text-gray-600">Master switch for all emails</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={notificationSettings.emailNotifications}
                   onChange={() => toggleNotification('emailNotifications')}
-                  className="sr-only peer" 
+                  className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
@@ -365,26 +396,29 @@ const SettingsContent = ({ email }) => {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all duration-200 ${
-                        activeTab === tab.id
-                          ? "bg-purple-50 text-purple-700 border border-purple-200 shadow-sm"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                      }`}
+                      className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all duration-200 ${activeTab === tab.id
+                        ? "bg-purple-50 text-purple-700 border border-purple-200 shadow-sm"
+                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                        }`}
                     >
                       <Icon className="w-5 h-5" />
                       <span className="font-medium">{tab.label}</span>
                     </button>
                   );
                 })}
-                
+
                 {/* Logout Button in Sidebar */}
-                <Link to={'/'}
-                
+                <button
+                  onClick={() => {
+                    localStorage.removeItem("instructor_token");
+                    localStorage.removeItem("instructor_user");
+                    window.location.href = "/";
+                  }}
                   className="w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all duration-200 text-red-600 hover:bg-red-50 hover:text-red-700 mt-4 border border-transparent hover:border-red-200"
                 >
                   <LogOut className="w-5 h-5" />
                   <span className="font-medium">Logout</span>
-                </Link>
+                </button>
               </nav>
             </div>
           </div>
@@ -394,7 +428,7 @@ const SettingsContent = ({ email }) => {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
               <div className="p-8">
                 {renderTabContent()}
-                
+
                 {/* Save Button */}
                 <div className="flex gap-3 pt-8 mt-8 border-t border-gray-200">
                   <button
