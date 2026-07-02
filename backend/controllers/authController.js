@@ -349,3 +349,67 @@ export const login = async (req, res) => {
     res.status(500).json({ message: "Login failed", error: error.message });
   }
 };
+
+/* ===================== GOOGLE LOGIN ===================== */
+export const googleLogin = async (req, res) => {
+  try {
+    const { token, role } = req.body;
+
+    const googleRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const googleData = await googleRes.json();
+    
+    if (!googleRes.ok) {
+      return res.status(400).json({ message: "Invalid Google Token" });
+    }
+    
+    const email = googleData.email;
+    const name = googleData.name;
+    
+    // Check if user exists
+    let user = await User.findOne({ email }).select("+password");
+    if (!user) {
+      const randomPassword = Math.random().toString(36).slice(-10);
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+      user = await User.create({
+        username: name.replace(/\s+/g, '').toLowerCase() + Math.floor(Math.random()*1000),
+        email,
+        password: hashedPassword,
+        fullName: name,
+        userType: role || "student",
+        emailVerified: true,
+        isApproved: role === "instructor" ? false : true,
+      });
+    }
+
+    if (role && user.userType !== role) {
+       return res.status(403).json({ message: `Access denied. Account registered as ${user.userType}.` });
+    }
+
+    // Generate Token
+    const jwtToken = jwt.sign(
+      { id: user._id, role: user.userType },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    const profile = await StudentProfile.findOne({ userId: user._id });
+    const avatar = profile?.personal?.avatar || googleData.picture || "";
+
+    res.json({
+      message: "Google Login successful",
+      token: jwtToken,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.userType,
+        fullName: user.fullName,
+        avatar: avatar
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Google Login failed", error: error.message });
+  }
+};

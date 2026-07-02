@@ -2,6 +2,7 @@ import { API_URL } from "../../config/api";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bot, Eye, EyeOff, Mail, Lock, LogIn, User, Users, X, KeyRound, CheckCircle } from "lucide-react";
+import { useGoogleLogin } from '@react-oauth/google';
 
 const SignIn = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -27,6 +28,41 @@ const SignIn = () => {
   });
 
   const navigate = useNavigate();
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_URL}/auth/google-login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: tokenResponse.access_token, role })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.message || "Google Login failed");
+          setLoading(false);
+          return;
+        }
+        if (data.user.role === "student") {
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("user", JSON.stringify(data.user));
+          navigate('/index', { state: { email: data.user.email, role: "student" } });
+        } else {
+          localStorage.setItem("instructorToken", data.token);
+          localStorage.setItem("instructorUser", JSON.stringify(data.user));
+          navigate('/instructor-dashboard', { state: { email: data.user.email, role: "instructor" } });
+        }
+        setLoading(false);
+      } catch (err) {
+        setError("Server error during Google Login.");
+        setLoading(false);
+      }
+    },
+    onError: () => {
+      setError("Google Login Failed");
+    }
+  });
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
@@ -600,7 +636,7 @@ const SignIn = () => {
 
                 {/* Social Login */}
                 <div className="flex justify-center space-x-4">
-                  <button className="w-10 h-10 bg-gray-100 border border-gray-300 rounded-full flex items-center justify-center text-gray-600 hover:text-white hover:border-red-500 hover:bg-red-500 transition-all duration-200">
+                  <button type="button" onClick={() => googleLogin()} className="w-10 h-10 bg-gray-100 border border-gray-300 rounded-full flex items-center justify-center text-gray-600 hover:text-white hover:border-red-500 hover:bg-red-500 transition-all duration-200">
                     <i className="fab fa-google text-sm"></i>
                   </button>
                   <button className="w-10 h-10 bg-gray-100 border border-gray-300 rounded-full flex items-center justify-center text-gray-600 hover:text-white hover:border-gray-800 hover:bg-gray-800 transition-all duration-200">

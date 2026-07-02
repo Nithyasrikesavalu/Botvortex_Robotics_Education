@@ -4,6 +4,7 @@ import {
   verifyOtp,
   register,
   login,
+  googleLogin,
   sendForgotPasswordOtp,
   verifyForgotPasswordOtp,
   resetPassword
@@ -15,6 +16,7 @@ router.post("/send-otp", sendOtp);
 router.post("/verify-otp", verifyOtp);
 router.post("/register", register);
 router.post("/login", login);
+router.post("/google-login", googleLogin);
 
 // Forgot Password Flow
 router.post("/send-forgot-otp", sendForgotPasswordOtp);

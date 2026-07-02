@@ -2,6 +2,7 @@ import { API_URL } from "../../config/api";
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bot, Eye, EyeOff, User, Mail, Lock, ArrowRight, GraduationCap, Users, BookOpen, Briefcase, Calendar, MapPin, Phone, CheckCircle, XCircle, Clock, ChevronLeft, ChevronRight, Shield, AtSign } from "lucide-react";
+import { useGoogleLogin } from '@react-oauth/google';
 
 const Register = () => {
   // Step management
@@ -56,6 +57,41 @@ const Register = () => {
   const otpRefs = useRef([]);
 
   const navigate = useNavigate();
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_URL}/auth/google-login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: tokenResponse.access_token, role: formData.userType })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.message || "Google Login failed");
+          setLoading(false);
+          return;
+        }
+        if (data.user.role === "student") {
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("user", JSON.stringify(data.user));
+          navigate('/index', { state: { email: data.user.email, role: "student" } });
+        } else {
+          localStorage.setItem("instructorToken", data.token);
+          localStorage.setItem("instructorUser", JSON.stringify(data.user));
+          navigate('/instructor-dashboard', { state: { email: data.user.email, role: "instructor" } });
+        }
+        setLoading(false);
+      } catch (err) {
+        alert("Server error during Google Login.");
+        setLoading(false);
+      }
+    },
+    onError: () => {
+      alert("Google Login Failed");
+    }
+  });
 
   // Resend OTP timer effect
   useEffect(() => {
@@ -747,7 +783,7 @@ const Register = () => {
 
                   {/* Social Login */}
                   <div className="flex justify-center space-x-3">
-                    <button className="w-8 h-8 bg-gray-100 border border-gray-300 rounded-lg flex items-center justify-center text-gray-600 hover:text-white hover:border-red-500 hover:bg-red-500 transition-all duration-200">
+                    <button type="button" onClick={() => googleLogin()} className="w-8 h-8 bg-gray-100 border border-gray-300 rounded-lg flex items-center justify-center text-gray-600 hover:text-white hover:border-red-500 hover:bg-red-500 transition-all duration-200">
                       <i className="fab fa-google text-xs"></i>
                     </button>
                     <button className="w-8 h-8 bg-gray-100 border border-gray-300 rounded-lg flex items-center justify-center text-gray-600 hover:text-white hover:border-gray-800 hover:bg-gray-800 transition-all duration-200">
