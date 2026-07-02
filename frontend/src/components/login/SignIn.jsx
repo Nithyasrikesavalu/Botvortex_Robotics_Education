@@ -639,12 +639,6 @@ const SignIn = () => {
                   <button type="button" onClick={() => googleLogin()} className="w-10 h-10 bg-gray-100 border border-gray-300 rounded-full flex items-center justify-center text-gray-600 hover:text-white hover:border-red-500 hover:bg-red-500 transition-all duration-200">
                     <i className="fab fa-google text-sm"></i>
                   </button>
-                  <button className="w-10 h-10 bg-gray-100 border border-gray-300 rounded-full flex items-center justify-center text-gray-600 hover:text-white hover:border-gray-800 hover:bg-gray-800 transition-all duration-200">
-                    <i className="fab fa-github text-sm"></i>
-                  </button>
-                  <button className="w-10 h-10 bg-gray-100 border border-gray-300 rounded-full flex items-center justify-center text-gray-600 hover:text-white hover:border-blue-600 hover:bg-blue-600 transition-all duration-200">
-                    <i className="fab fa-microsoft text-sm"></i>
-                  </button>
                 </div>
 
                 {/* Create Account Link */}
