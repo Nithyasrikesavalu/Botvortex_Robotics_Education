@@ -100,7 +100,7 @@ const Banner = () => {
         <div className="absolute inset-0 flex flex-col justify-center items-start text-white px-6 lg:px-12 max-w-7xl mx-auto">
           <div className="max-w-2xl">
             {/* Brand Logo */}
-            <div className="flex items-center gap-3 mb-6">
+            {/* <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 bg-gradient-to-br from-[#00C3FF] to-[#8A5DFF] rounded-xl flex items-center justify-center shadow-2xl">
                 <Bot className="w-6 h-6 text-white" />
               </div>
@@ -108,7 +108,7 @@ const Banner = () => {
                 <span className="text-[#00C3FF]">Bot</span>
                 <span className="text-[#8A5DFF]">Vortex</span>
               </span>
-            </div>
+            </div> */}
 
             {/* Main Heading */}
             <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight">

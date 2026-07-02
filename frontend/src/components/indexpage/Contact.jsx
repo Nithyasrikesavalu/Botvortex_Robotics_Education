@@ -86,14 +86,14 @@ const ContactPage = () => {
     {
       icon: Mail,
       title: 'Email Us',
-      content: 'info@botvortex.com',
+      content: 'info@botvortex.com\nbotvortex.learning@gmail.com',
       description: 'Send us an email anytime',
       color: 'from-blue-500 to-cyan-500'
     },
     {
       icon: Phone,
       title: 'Call Us',
-      content: '+1 (123) 456-7890',
+      content: '+1 (123) 456-7890\n+91 6369346836',
       description: 'Mon-Fri: 9AM - 6PM',
       color: 'from-purple-500 to-blue-500'
     },
@@ -257,7 +257,7 @@ const ContactPage = () => {
                 <item.icon className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-gray-800 font-semibold text-lg mb-2">{item.title}</h3>
-              <p className="text-gray-700 font-medium text-sm mb-1">{item.content}</p>
+              <p className="text-gray-700 font-medium text-sm mb-1 whitespace-pre-line">{item.content}</p>
               <p className="text-gray-500 text-sm">{item.description}</p>
             </motion.div>
           ))}

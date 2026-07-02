@@ -85,11 +85,11 @@ const Footer = () => {
             <div className="space-y-3 text-gray-300">
               <div className="flex items-start space-x-3">
                 <span className="text-cyan-400 mt-1">✉</span>
-                <span>info@botvortex.com</span>
+                <span>botvortex.learning@gmail.com</span>
               </div>
               <div className="flex items-start space-x-3">
                 <span className="text-cyan-400 mt-1">📞</span>
-                <span>+1 (123) 456-7890</span>
+                <span>+91 6369346836</span>
               </div>
               <div className="flex items-start space-x-3">
                 <span className="text-cyan-400 mt-1">📍</span>

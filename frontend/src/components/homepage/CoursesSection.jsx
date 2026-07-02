@@ -153,7 +153,7 @@ const CoursesSection = () => {
               className="text-center lg:text-left"
             >
               <Link
-                to="/Courses"
+                to="/login"
                 className="inline-flex items-center gap-3 bg-gradient-to-r from-[#00C3FF] to-[#8A5DFF] text-white px-8 py-4 rounded-2xl font-bold hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
               >
                 <BookOpen className="w-5 h-5" />
