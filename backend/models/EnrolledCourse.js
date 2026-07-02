@@ -27,7 +27,9 @@ const EnrolledCourseSchema = new mongoose.Schema({
         done: Boolean
     }],
     achievements: [String],
-    thumbnailEmoji: { type: String, default: '🎓' }
+    thumbnailEmoji: { type: String, default: '🎓' },
+    finalTaskCompleted: { type: Boolean, default: false },
+    finalProjectReport: { type: String, default: '' }
 }, { timestamps: true });
 
 // Compound index to ensure a user can enroll in a specific course only once

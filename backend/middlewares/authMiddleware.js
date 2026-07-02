@@ -31,6 +31,7 @@ export const isInstructor = (req, res, next) => {
         next();
     } else {
         console.warn(`[Auth] Access denied for user ${req.user?.id} on path ${req.path}. Role: ${req.user?.role}`);
+        import('fs').then(fs => fs.writeFileSync('auth_error.log', JSON.stringify({ user: req.user, path: req.path })));
         res.status(403).json({ message: 'Not authorized as an instructor' });
     }
 };

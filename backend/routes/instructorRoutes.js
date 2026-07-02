@@ -12,7 +12,8 @@ import {
     markAllNotificationsRead,
     addModule,
     deleteModule,
-    getModules
+    getModules,
+    getInstructorReviews
 } from "../controllers/instructorController.js";
 import { protect, isInstructor } from "../middlewares/authMiddleware.js";
 import { upload } from "../middlewares/uploadMiddleware.js";
@@ -29,10 +30,13 @@ router.post("/courses", createCourse);
 router.put("/courses/:id", updateCourse);
 router.get("/students", getMyStudents);
 router.get("/settings", getSettings);
-router.put("/settings", updateSettings);
+router.put("/settings", upload.single('avatar'), updateSettings);
 router.get("/notifications", getNotifications);
 router.put("/notifications/:id/read", markNotificationRead);
 router.put("/notifications/read-all", markAllNotificationsRead);
+
+// Reviews
+router.get("/reviews", getInstructorReviews);
 
 // Module management
 router.post("/courses/:courseId/modules/video", upload.single('video'), addModule);

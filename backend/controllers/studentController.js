@@ -4,6 +4,8 @@ import EnrolledCourse from '../models/EnrolledCourse.js';
 import Transaction from '../models/Transaction.js';
 import Course from '../models/Course.js';
 import Notification from '../models/Notification.js';
+import TaskSubmission from '../models/TaskSubmission.js';
+import Review from '../models/Review.js';
 
 // --- Student Profile Controllers ---
 
@@ -13,14 +15,33 @@ export const getProfile = async (req, res) => {
         const user = await User.findById(userId);
         let profile = await StudentProfile.findOne({ userId });
 
+        // Fetch enrolled courses for the user
+        const enrolledCourses = await EnrolledCourse.find({ userId }).lean();
+        const coursesEnrolled = enrolledCourses.length;
+        const completedCoursesList = enrolledCourses.filter(c => c.progress >= 100 || c.certificate || c.finalTaskCompleted);
+        const coursesCompleted = completedCoursesList.length;
+
+        // Fetch task submissions
+        const tasksCompleted = await TaskSubmission.countDocuments({ studentId: userId });
+
         const baseProfile = profile ? profile.toObject() : {
             personal: {},
             education: {},
             academic: {}
         };
 
+        // Add derived stats to the response
+        const stats = {
+            coursesEnrolled,
+            coursesCompleted,
+            tasksCompleted,
+            completedCoursesList
+            // You can add more aggregated stats here (e.g., total learning hours, certificates earned)
+        };
+
         res.json({
             ...baseProfile,
+            ...stats,
             fullName: user?.fullName,
             email: user?.email,
             userType: user?.userType,
@@ -109,20 +130,42 @@ export const enrollInCourse = async (req, res) => {
             return res.status(400).json({ message: "Already enrolled in this course" });
         }
 
-        // Get Course Details
-        const course = await Course.findOne({ courseId });
-        if (!course) {
-            return res.status(404).json({ message: "Course not found" });
-        }
-
-        // Get Student and Instructor
+        // Get Student
         const student = await User.findById(userId);
-        const instructor = await User.findById(course.instructor);
-
         if (!student) return res.status(404).json({ message: "Student not found" });
 
+        // Get Course Details (could be from DB or from request body for dummy courses)
+        const course = await Course.findOne({ courseId });
+        
+        let coursePrice = 0;
+        let courseTitle = req.body.title || "Unknown Course";
+        let instructorName = req.body.instructor || "Unknown Instructor";
+        let thumbnailEmoji = req.body.thumbnailEmoji || "🎓";
+        
+        let totalLessons = 10;
+        if (req.body.totalLessons) {
+            if (typeof req.body.totalLessons === 'number') {
+                totalLessons = req.body.totalLessons;
+            } else if (typeof req.body.totalLessons === 'string') {
+                const parsed = parseInt(req.body.totalLessons.replace(/\D/g, ''), 10);
+                if (!isNaN(parsed)) totalLessons = parsed;
+            }
+        }
+        
+        let instructor = null;
+
+        if (course) {
+            coursePrice = course.coins || 0;
+            courseTitle = course.title;
+            thumbnailEmoji = course.thumbnailEmoji || thumbnailEmoji;
+            instructor = await User.findById(course.instructor);
+            if (instructor) instructorName = instructor.fullName;
+        } else {
+            // For dummy frontend courses, we might still want to charge coins if passed in body
+            coursePrice = req.body.coins || 0;
+        }
+
         // Check if student has enough coins
-        const coursePrice = course.coins || 0;
         if (student.coins < coursePrice) {
             return res.status(400).json({ message: "Insufficient coins to enroll in this course" });
         }
@@ -149,28 +192,30 @@ export const enrollInCourse = async (req, res) => {
         // Create Transaction record for Student
         await Transaction.create({
             userId: student._id,
-            type: "enrollment",
-            amount: coursePrice,
+            type: "debit",
+            amount: 0,
             coins: coursePrice,
+            paymentMethod: "coins",
             status: "completed"
         });
 
         // Create Enrollment
         const newEnrollment = new EnrolledCourse({
             userId,
-            courseId: course.courseId,
-            title: course.title,
-            instructor: instructor ? instructor.fullName : "Unknown",
-            courseRef: course._id,
+            courseId: courseId,
+            title: courseTitle,
+            instructor: instructorName,
+            courseRef: course ? course._id : null,
             progress: 0,
-            totalLessons: 10, // Default or from course
-            thumbnailEmoji: course.thumbnailEmoji || "🚀"
+            totalLessons: totalLessons,
+            thumbnailEmoji: thumbnailEmoji
         });
 
         await newEnrollment.save();
         res.status(201).json(newEnrollment);
     } catch (error) {
         console.error("Error enrolling in course:", error);
+        import('fs').then(fs => fs.writeFileSync('enroll_error.log', error.stack));
         res.status(500).json({ message: "Server error enrolling in course" });
     }
 };
@@ -296,6 +341,71 @@ export const deleteAccount = async (req, res) => {
     } catch (error) {
         console.error("Error deleting account:", error);
         res.status(500).json({ message: "Server error deleting account" });
+    }
+};
+
+// --- Review Controllers ---
+
+export const submitReview = async (req, res) => {
+    try {
+        const studentId = req.user.id;
+        const { courseId, rating, text } = req.body;
+
+        if (!courseId || !rating || !text) {
+            return res.status(400).json({ message: "Course ID, rating, and text are required" });
+        }
+
+        // Find the enrolled course to get details
+        const enrollment = await EnrolledCourse.findOne({ userId: studentId, courseId });
+        if (!enrollment) {
+            return res.status(403).json({ message: "You can only review courses you are enrolled in." });
+        }
+
+        // Get instructor. Assuming enrollment.instructor has the instructor name, but we need the instructor ID.
+        // Wait, course might not have instructor ID in EnrolledCourse if it was dummy.
+        // Let's try to find the instructor.
+        let instructorId = null;
+        if (enrollment.courseRef) {
+            const actualCourse = await Course.findById(enrollment.courseRef);
+            if (actualCourse && actualCourse.instructor) {
+                instructorId = actualCourse.instructor;
+            }
+        }
+        
+        if (!instructorId) {
+            // Find an instructor in the system as a fallback
+            const fallbackInstructor = await User.findOne({ userType: 'instructor' });
+            if (fallbackInstructor) instructorId = fallbackInstructor._id;
+        }
+
+        if (!instructorId) {
+            return res.status(400).json({ message: "Instructor not found for this course." });
+        }
+
+        const review = await Review.create({
+            studentId,
+            instructorId,
+            courseId,
+            courseTitle: enrollment.title,
+            rating,
+            text
+        });
+
+        res.status(201).json(review);
+    } catch (error) {
+        console.error("Error submitting review:", error);
+        res.status(500).json({ message: "Server error submitting review" });
+    }
+};
+
+export const getMyReviews = async (req, res) => {
+    try {
+        const studentId = req.user.id;
+        const reviews = await Review.find({ studentId }).sort({ createdAt: -1 });
+        res.json(reviews);
+    } catch (error) {
+        console.error("Error fetching reviews:", error);
+        res.status(500).json({ message: "Server error fetching reviews" });
     }
 };
 

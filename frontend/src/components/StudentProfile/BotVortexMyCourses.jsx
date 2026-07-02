@@ -462,7 +462,6 @@ const BotVortexMyCourses = ({ defaultTab = "courses" }) => {
   const menuItems = [
     { id: "courses", label: "My Courses", icon: BookOpen },
     { id: "certificates", label: "Certificates", icon: Award },
-    { id: "dashboard", label: "My Dashboard", icon: User },
     { id: "settings", label: "Settings", icon: SettingsIcon }
   ];
 
@@ -731,7 +730,7 @@ const BotVortexMyCourses = ({ defaultTab = "courses" }) => {
                             to="/CoursesModule"
                             className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl text-xs font-bold transition-all"
                           >
-                            {course.progress > 0 ? "Continue Learning" : "Start Course"}
+                            {course.progress > 0 ? "Continue Learning" : "Start Learning"}
                           </Link>
                           {course.certificate && (
                             <button

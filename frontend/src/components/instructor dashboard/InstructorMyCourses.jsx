@@ -62,7 +62,7 @@ const InstructorMyCourses = ({ data }) => {
     setModulesLoading(true);
     try {
       const response = await fetch(`${API_URL}/instructor/courses/${courseId}/modules`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("instructor_token")}` }
+        headers: { Authorization: `Bearer ${(localStorage.getItem("instructorToken") || localStorage.getItem("token"))}` }
       });
       if (response.ok) {
         const data = await response.json();
@@ -82,7 +82,7 @@ const InstructorMyCourses = ({ data }) => {
   }, [selectedCourse]);
 
   const fetchCourses = async () => {
-    const token = localStorage.getItem("instructor_token");
+    const token = localStorage.getItem("instructorToken") || (localStorage.getItem("instructorToken") || localStorage.getItem("token"));
     if (!token) return;
 
     try {
@@ -94,7 +94,7 @@ const InstructorMyCourses = ({ data }) => {
 
         if (fetchedCourses.length === 0) {
           // Seed if empty
-          const user = JSON.parse(localStorage.getItem("instructor_user"));
+          const user = JSON.parse(localStorage.getItem("user"));
           const seedRes = await fetch(`${API_URL}/courses/seed`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -144,7 +144,7 @@ const InstructorMyCourses = ({ data }) => {
     try {
       const response = await fetch(`${API_URL}/instructor/courses/${selectedCourse.id}/modules/${moduleId}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("instructor_token")}` }
+        headers: { Authorization: `Bearer ${(localStorage.getItem("instructorToken") || localStorage.getItem("token"))}` }
       });
       if (response.ok) {
         setModules(modules.filter(m => m._id !== moduleId));
@@ -166,7 +166,7 @@ const InstructorMyCourses = ({ data }) => {
   };
 
   const handleUpdateCourse = async () => {
-    const token = localStorage.getItem("instructor_token");
+    const token = localStorage.getItem("instructorToken") || (localStorage.getItem("instructorToken") || localStorage.getItem("token"));
     try {
       const response = await fetch(`${API_URL}/instructor/courses/${selectedCourse.id}`, {
         method: "PUT",
@@ -247,7 +247,7 @@ const InstructorMyCourses = ({ data }) => {
         const response = await fetch(`${API_URL}/instructor/courses/${selectedCourse.id}/modules/${uploadType}`, {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("instructor_token")}`
+            Authorization: `Bearer ${(localStorage.getItem("instructorToken") || localStorage.getItem("token"))}`
           },
           body: formData
         });
@@ -281,7 +281,7 @@ const InstructorMyCourses = ({ data }) => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
               <input
                 type="text"
-                value={title}
+                value={title || ""}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 placeholder={`Enter ${uploadType} title`}
@@ -322,7 +322,7 @@ const InstructorMyCourses = ({ data }) => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
               <textarea
                 rows="3"
-                value={description}
+                value={description || ""}
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 placeholder="Optional description..."

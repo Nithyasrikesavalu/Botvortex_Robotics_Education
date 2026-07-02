@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import Course from "../models/Course.js";
 import EnrolledCourse from "../models/EnrolledCourse.js";
 import Notification from "../models/Notification.js";
+import Review from "../models/Review.js";
 
 export const getDashboardData = async (req, res) => {
     try {
@@ -13,8 +14,8 @@ export const getDashboardData = async (req, res) => {
             return res.status(404).json({ message: "Instructor not found" });
         }
 
-        // Get courses created by this instructor
-        const courses = await Course.find({ instructor: instructorId });
+        // Get all platform courses
+        const courses = await Course.find({});
         const courseIds = courses.map(c => c.courseId);
 
         // Get student enrollments for these courses
@@ -77,6 +78,7 @@ export const getDashboardData = async (req, res) => {
 
         res.json({
             fullName: instructor.fullName,
+            avatar: instructor.avatar,
             stats: {
                 totalStudents,
                 totalCourses,
@@ -107,8 +109,17 @@ export const getDashboardData = async (req, res) => {
 
 export const getMyCourses = async (req, res) => {
     try {
-        const courses = await Course.find({ instructor: req.user.id }); // Only show own courses
-        res.json(courses);
+        const courses = await Course.find({}); // Show all platform courses for now
+        const courseIds = courses.map(c => c.courseId);
+        const enrollments = await EnrolledCourse.find({ courseId: { $in: courseIds } });
+
+        const enrichedCourses = courses.map(c => {
+            const courseObj = c.toObject();
+            courseObj.students = enrollments.filter(e => e.courseId === c.courseId).length;
+            return courseObj;
+        });
+
+        res.json(enrichedCourses);
     } catch (error) {
         console.error("Error fetching courses:", error);
         res.status(500).json({ message: "Error fetching courses" });
@@ -117,15 +128,20 @@ export const getMyCourses = async (req, res) => {
 
 export const createCourse = async (req, res) => {
     try {
-        const { title, description, level, price, image, learnings } = req.body;
+        const { title, description, level, coins, image, learnings, duration, lectures, projects, finalTask, modules } = req.body;
 
         const newCourse = new Course({
             title,
             description,
-            level: level.toLowerCase(),
-            coins: price,
+            level: level ? level.toLowerCase() : 'beginner',
+            coins: coins || 0,
             image,
             learnings,
+            duration,
+            lectures,
+            projects,
+            finalTask,
+            modules: modules || [],
             instructor: req.user.id,
             id: Date.now(), // numerical ID
             courseId: title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]/g, '')
@@ -142,7 +158,7 @@ export const createCourse = async (req, res) => {
 export const updateCourse = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, description, level, coins, image, learnings, duration, lectures, projects } = req.body;
+        const { title, description, level, coins, image, learnings, duration, lectures, projects, finalTask, modules } = req.body;
 
         // Find course: either owned by instructor or has no instructor yet (for legacy/seeded data)
         const course = await Course.findOne({
@@ -172,6 +188,10 @@ export const updateCourse = async (req, res) => {
         course.duration = duration || course.duration;
         course.lectures = lectures || course.lectures;
         course.projects = projects || course.projects;
+        course.finalTask = finalTask || course.finalTask;
+        if (modules) {
+            course.modules = modules;
+        }
 
         // Update slug if title changed
         if (title) {
@@ -206,6 +226,16 @@ export const updateCourse = async (req, res) => {
             await Notification.insertMany(notifications);
         }
 
+        // Notify Instructor
+        await Notification.create({
+            userId: req.user.id,
+            title: "Course Updated Successfully",
+            message: `You have successfully updated the course: ${updatedCourse.title}`,
+            type: "success",
+            icon: "BookOpen",
+            action: "view"
+        });
+
         res.json(updatedCourse);
     } catch (error) {
         console.error("Update course error:", error);
@@ -219,13 +249,15 @@ export const getMyStudents = async (req, res) => {
         const courseIds = courses.map(c => c.courseId);
 
         const enrollments = await EnrolledCourse.find({ courseId: { $in: courseIds } })
-            .populate('userId', 'fullName email userType');
+            .populate('userId', 'fullName email userType')
+            .populate('courseRef', 'coins');
 
         const studentList = enrollments.map(e => ({
             id: e.userId?._id,
             name: e.userId?.fullName || "Student",
             email: e.userId?.email || "N/A",
             course: e.title,
+            amount: e.courseRef?.coins || 0,
             joinDate: e.createdAt,
             progress: e.progress || 0,
             avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(e.userId?.fullName || "S")}&background=random`
@@ -246,6 +278,7 @@ export const getSettings = async (req, res) => {
         }
         res.json(user);
     } catch (error) {
+        console.error("Error fetching settings:", error);
         res.status(500).json({ message: "Error fetching settings" });
     }
 };
@@ -253,9 +286,23 @@ export const getSettings = async (req, res) => {
 export const updateSettings = async (req, res) => {
     try {
         const { fullName, instructorDetails } = req.body;
+        
+        let updateData = {};
+        if (fullName) updateData.fullName = fullName;
+        
+        if (instructorDetails) {
+            updateData.instructorDetails = typeof instructorDetails === 'string' 
+                ? JSON.parse(instructorDetails) 
+                : instructorDetails;
+        }
+
+        if (req.file) {
+            updateData.avatar = `/uploads/courses/${req.file.filename}`;
+        }
+        
         const user = await User.findByIdAndUpdate(
             req.user.id,
-            { fullName, instructorDetails },
+            updateData,
             { new: true }
         );
 
@@ -272,6 +319,7 @@ export const updateSettings = async (req, res) => {
 
         res.json(user);
     } catch (error) {
+        console.error("Error updating settings:", error);
         res.status(500).json({ message: "Error updating settings" });
     }
 };
@@ -351,7 +399,32 @@ export const deleteModule = async (req, res) => {
 
         res.json({ message: "Module deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Error deleting module" });
+        res.status(500).json({ message: "Server error deleting module" });
+    }
+};
+
+export const getInstructorReviews = async (req, res) => {
+    try {
+        const instructorId = req.user.id;
+        // Fetch reviews where instructorId matches the logged-in instructor
+        const reviews = await Review.find({ instructorId })
+            .populate('studentId', 'fullName')
+            .sort({ createdAt: -1 });
+
+        // Transform for frontend
+        const formattedReviews = reviews.map(r => ({
+            id: r._id,
+            courseName: r.courseTitle,
+            studentName: r.studentId ? r.studentId.fullName : "Unknown Student",
+            rating: r.rating,
+            date: r.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            text: r.text
+        }));
+
+        res.json(formattedReviews);
+    } catch (error) {
+        console.error("Error fetching instructor reviews:", error);
+        res.status(500).json({ message: "Server error fetching reviews" });
     }
 };
 

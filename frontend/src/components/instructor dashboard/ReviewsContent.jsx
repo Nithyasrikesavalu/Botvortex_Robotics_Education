@@ -1,404 +1,233 @@
-import React, { useState } from "react";
-import { Star, MessageSquare, Filter, ThumbsUp, Flag, TrendingUp, Award, Heart, Sparkles, Calendar, BookOpen, Users } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Star, MessageSquare, Filter, ThumbsUp, TrendingUp, Award, Calendar, Quote, ChevronDown, Check } from "lucide-react";
+import { API_URL } from "../../config/api";
 
-const ReviewsContent = ({ data }) => {
-  // Sample reviews data - 5 reviews
-  const sampleReviews = [
-    {
-      id: 1,
-      student: "Priya Sharma",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
-      rating: 5,
-      comment: "This course completely transformed my understanding of React! The instructor explains complex concepts in such a simple way. The projects were challenging but extremely rewarding.",
-      course: "Advanced React Masterclass",
-      date: "2024-01-15",
-      helpful: 12
-    },
-    {
-      id: 2,
-      student: "Rahul Kumar",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
-      rating: 4,
-      comment: "Great content and well structured. I particularly enjoyed the real-world examples. Would love to see more advanced topics covered in future updates.",
-      course: "JavaScript Fundamentals",
-      date: "2024-01-12",
-      helpful: 8
-    },
-    {
-      id: 3,
-      student: "Ananya Patel",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
-      rating: 5,
-      comment: "Absolutely brilliant! The way the instructor breaks down complex topics is amazing. The support in the community is fantastic too. Highly recommended!",
-      course: "Full Stack Development",
-      date: "2024-01-10",
-      helpful: 15
-    },
-    {
-      id: 4,
-      student: "Vikram Singh",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-      rating: 3,
-      comment: "Good course overall, but some sections felt rushed. The exercises were helpful but I wish there were more practice projects. The instructor's teaching style is engaging though.",
-      course: "Node.js Backend Development",
-      date: "2024-01-08",
-      helpful: 5
-    },
-    {
-      id: 5,
-      student: "Sneha Reddy",
-      avatar: "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=100&h=100&fit=crop&crop=face",
-      rating: 5,
-      comment: "This is exactly what I needed to level up my skills! The practical approach and real-world projects helped me land a new job. Thank you for this amazing course!",
-      course: "React & Next.js Pro",
-      date: "2024-01-05",
-      helpful: 20
-    }
-  ];
-
-  // Use sample reviews if no data provided, otherwise use provided data
-  const reviews = data?.reviews || sampleReviews;
-  
+const ReviewsContent = ({ instructor }) => {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
-  const [likedReviews, setLikedReviews] = useState(new Set());
 
-  // REMOVED: No longer limiting to 5 reviews
-  // const limitedReviews = reviews.slice(0, 5);
+  useEffect(() => {
+    fetchReviews();
+  }, [instructor]);
 
-  // Filter and sort reviews (from ALL reviews)
-  const filteredReviews = reviews
-    .filter(review => {
-      if (filter === "all") return true;
-      if (filter === "5-stars") return review.rating === 5;
-      if (filter === "4-stars") return review.rating === 4;
-      if (filter === "1-3-stars") return review.rating <= 3;
-      return true;
-    })
-    .sort((a, b) => {
-      if (sortBy === "newest") return new Date(b.date) - new Date(a.date);
-      if (sortBy === "highest") return b.rating - a.rating;
-      if (sortBy === "lowest") return a.rating - b.rating;
-      return 0;
-    });
+  const fetchReviews = async () => {
+    try {
+      const token = localStorage.getItem('instructorToken') || localStorage.getItem('token');
+      if (!token) return;
 
-  // Review statistics (based on ALL reviews)
-  const totalReviews = reviews.length;
-  const averageRating = (reviews.reduce((acc, review) => acc + review.rating, 0) / totalReviews).toFixed(1);
-  const fiveStarReviews = reviews.filter(review => review.rating === 5).length;
-  const positiveReviews = Math.round((reviews.filter(review => review.rating >= 4).length / totalReviews) * 100);
-  
-  // Rating distribution (based on ALL reviews)
-  const ratingDistribution = [5, 4, 3, 2, 1].map(stars => ({
-    stars,
-    count: reviews.filter(review => review.rating === stars).length,
-    percentage: Math.round((reviews.filter(review => review.rating === stars).length / totalReviews) * 100)
-  }));
-
-  // Recent activity
-  const recentActivity = [
-    { type: "new_review", text: "New 5-star review received", time: "2 hours ago", icon: Star },
-    { type: "milestone", text: "Reached 100+ reviews", time: "1 day ago", icon: Award },
-    { type: "trend", text: "Rating improved to 4.8", time: "2 days ago", icon: TrendingUp }
-  ];
-
-  const toggleLike = (reviewId) => {
-    const newLikedReviews = new Set(likedReviews);
-    if (newLikedReviews.has(reviewId)) {
-      newLikedReviews.delete(reviewId);
-    } else {
-      newLikedReviews.add(reviewId);
+      const res = await fetch(`${API_URL}/instructor/reviews`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setReviews(data);
+      }
+    } catch (error) {
+      console.error('Error fetching instructor reviews:', error);
+    } finally {
+      setLoading(false);
     }
-    setLikedReviews(newLikedReviews);
   };
 
+  if (!instructor) return null;
+
+  const totalReviews = reviews.length;
+  const averageRating = totalReviews > 0 ? (reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews).toFixed(1) : "0.0";
+  const positiveReviews = reviews.filter(r => r.rating >= 4).length;
+  const positivePercentage = totalReviews > 0 ? Math.round((positiveReviews / totalReviews) * 100) : 0;
+  const fiveStarReviews = reviews.filter(r => r.rating === 5).length;
+  const fiveStarPct = totalReviews > 0 ? Math.round((fiveStarReviews / totalReviews) * 100) : 0;
+
+  const filteredReviews = reviews.filter(r => {
+    if (filter === '5-stars') return r.rating === 5;
+    if (filter === '4-stars') return r.rating === 4;
+    return true;
+  }).sort((a, b) => {
+    if (sortBy === 'highest') return b.rating - a.rating;
+    return new Date(b.date) - new Date(a.date);
+  });
+
   return (
-    <div className="space-y-6">
-      {/* Header Section */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+    <div className="space-y-8 pb-10">
+      
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#0A192F]/60 backdrop-blur-md rounded-3xl p-6 md:p-8 border border-white/5 shadow-xl">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Student Feedback</h2>
-          <p className="text-gray-600 mt-1">See what your students are saying about your courses</p>
+          <h2 className="text-3xl font-black text-white flex items-center gap-3">
+            <Star className="text-yellow-400 w-8 h-8 fill-yellow-400" />
+            Student Feedback
+          </h2>
+          <p className="text-slate-400 mt-1">See what your students are saying about your courses.</p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-gray-600 bg-white px-4 py-2 rounded-lg border border-gray-200">
-          <MessageSquare className="w-4 h-4" />
-          <span className="font-semibold">{reviews.length}</span>
-          <span>Total Reviews</span>
+        <div className="flex items-center gap-3 bg-white/5 px-4 py-2.5 rounded-xl border border-white/10">
+          <MessageSquare className="text-[#00E5FF] w-5 h-5" />
+          <span className="font-black text-white">{totalReviews}</span>
+          <span className="text-sm font-bold text-slate-400 uppercase tracking-wider">Total Reviews</span>
         </div>
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl p-4 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold">{averageRating}</p>
-              <p className="text-purple-100 text-sm">Average Rating</p>
-            </div>
-            <div className="p-2 bg-white/20 rounded-lg">
-              <Star className="w-6 h-6" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }} className="bg-gradient-to-br from-[#7C3AED] to-[#4C1D95] rounded-3xl p-6 shadow-[0_0_30px_rgba(124,58,237,0.2)]">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-4xl font-black text-white">{averageRating}</p>
+            <div className="p-3 bg-white/10 rounded-2xl">
+              <Star className="w-8 h-8 text-yellow-300 fill-yellow-300" />
             </div>
           </div>
-          <div className="flex items-center gap-1 mt-2">
-            {[...Array(5)].map((_, i) => (
-              <Star 
-                key={i} 
-                className={`w-3 h-3 ${i < Math.floor(averageRating) ? 'text-yellow-300 fill-current' : 'text-white/40'}`} 
-              />
-            ))}
+          <div className="flex gap-1 mb-3">
+            {[1,2,3,4,5].map(i => <Star key={i} size={16} className={i <= Math.round(averageRating) ? "text-yellow-300 fill-yellow-300" : "text-yellow-300/30"} />)}
           </div>
-        </div>
+          <p className="text-sm font-bold text-white/80 uppercase tracking-widest">Average Rating</p>
+        </motion.div>
 
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{fiveStarReviews}</p>
-              <p className="text-gray-600 text-sm">5-Star Reviews</p>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-[#0A192F]/60 backdrop-blur-md rounded-3xl p-6 border border-white/5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-emerald-400/10 text-emerald-400 rounded-xl">
+              <ThumbsUp size={24} />
             </div>
-            <div className="p-2 bg-yellow-50 rounded-lg">
-              <Award className="w-6 h-6 text-yellow-600" />
-            </div>
+            {totalReviews > 0 && (
+              <div className="flex items-center gap-1 bg-emerald-400/10 px-2 py-1 rounded-lg">
+                <TrendingUp size={12} className="text-emerald-400" />
+                <span className="text-emerald-400 text-xs font-bold">+5%</span>
+              </div>
+            )}
           </div>
-          <div className="flex items-center gap-1 mt-2">
-            <TrendingUp className="w-4 h-4 text-green-500" />
-            <span className="text-green-600 text-sm font-medium">+12% this month</span>
+          <p className="text-3xl font-black text-white mb-1">{positivePercentage}%</p>
+          <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Positive Feedback</p>
+          <div className="w-full bg-slate-800 rounded-full h-1.5 mt-3 overflow-hidden">
+            <div className="bg-emerald-400 h-full rounded-full" style={{ width: `${positivePercentage}%` }}></div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{positiveReviews}%</p>
-              <p className="text-gray-600 text-sm">Positive Reviews</p>
-            </div>
-            <div className="p-2 bg-green-50 rounded-lg">
-              <ThumbsUp className="w-6 h-6 text-green-600" />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-[#0A192F]/60 backdrop-blur-md rounded-3xl p-6 border border-white/5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-yellow-400/10 text-yellow-400 rounded-xl">
+              <Award size={24} />
             </div>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-            <div 
-              className="bg-green-500 h-2 rounded-full transition-all duration-1000"
-              style={{ width: `${positiveReviews}%` }}
-            ></div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{totalReviews}</p>
-              <p className="text-gray-600 text-sm">Total Feedback</p>
-            </div>
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <MessageSquare className="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
-          <div className="flex items-center gap-1 mt-2 text-sm text-gray-500">
-            <Users className="w-4 h-4" />
-            <span>{Math.round(totalReviews * 0.35)}% of students reviewed</span>
-          </div>
-        </div>
+          <p className="text-3xl font-black text-white mb-1">{fiveStarReviews}</p>
+          <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">5-Star Reviews</p>
+          <p className="text-xs text-slate-500 mt-2">Making up {fiveStarPct}% of all reviews</p>
+        </motion.div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Reviews Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Main Reviews List */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Filters and Sorting */}
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">Filter by:</span>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { key: "all", label: "All Reviews" },
-                    { key: "5-stars", label: "5 Stars" },
-                    { key: "4-stars", label: "4 Stars" },
-                    { key: "1-3-stars", label: "1-3 Stars" }
-                  ].map((filterOption) => (
-                    <button
-                      key={filterOption.key}
-                      onClick={() => setFilter(filterOption.key)}
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                        filter === filterOption.key
-                          ? "bg-purple-100 text-purple-700 border border-purple-200"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                    >
-                      {filterOption.label}
-                    </button>
-                  ))}
-                </div>
+          <div className="bg-[#0A192F]/60 backdrop-blur-md rounded-3xl border border-white/5 p-6 shadow-xl">
+            <div className="flex flex-wrap justify-between items-center gap-4 mb-8 border-b border-white/10 pb-6">
+              <div className="flex gap-2 bg-white/5 p-1 rounded-xl">
+                {[
+                  { id: 'all', label: 'All Reviews' },
+                  { id: '5-stars', label: '5 Stars' },
+                  { id: '4-stars', label: '4 Stars' }
+                ].map(f => (
+                  <button 
+                    key={f.id} onClick={() => setFilter(f.id)}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${filter === f.id ? 'bg-[#7C3AED] text-white' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
               </div>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              >
-                <option value="newest">Newest First</option>
-                <option value="highest">Highest Rated</option>
-                <option value="lowest">Lowest Rated</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Reviews List - ALL REVIEWS */}
-          {filteredReviews.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-200">
-              <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Reviews Found</h3>
-              <p className="text-gray-600">Try changing your filter criteria to see more reviews.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredReviews.map((review) => (
-                <div key={review.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
-                  <div className="flex items-start gap-4">
-                    <div className="relative">
-                      <img
-                        src={review.avatar}
-                        alt={review.student}
-                        className="w-12 h-12 rounded-full flex-shrink-0 border-2 border-white shadow-sm"
-                      />
-                      {review.rating === 5 && (
-                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center">
-                          <Star className="w-3 h-3 text-white fill-current" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{review.student}</h4>
-                          <div className="flex items-center gap-2 mt-1">
-                            <div className="flex items-center gap-1">
-                              {[...Array(5)].map((_, i) => (
-                                <Star 
-                                  key={i} 
-                                  className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
-                                />
-                              ))}
-                            </div>
-                            <span className="text-sm text-gray-500">
-                              {new Date(review.date).toLocaleDateString('en-US', { 
-                                month: 'short', 
-                                day: 'numeric', 
-                                year: 'numeric' 
-                              })}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => toggleLike(review.id)}
-                            className={`p-2 rounded-lg transition-colors ${
-                              likedReviews.has(review.id) 
-                                ? 'text-red-500 bg-red-50' 
-                                : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
-                            }`}
-                          >
-                            <Heart 
-                              className={`w-4 h-4 ${likedReviews.has(review.id) ? 'fill-current' : ''}`} 
-                            />
-                          </button>
-                          <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
-                            <Flag className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                      
-                      <p className="text-gray-600 mb-4 leading-relaxed">{review.comment}</p>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-purple-600 font-medium bg-purple-50 px-3 py-1 rounded-full text-sm">
-                          {review.course}
-                        </span>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          {review.helpful && (
-                            <span className="flex items-center gap-1">
-                              <ThumbsUp className="w-4 h-4" />
-                              {review.helpful} found helpful
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
               
-              {/* Show message about filtered results */}
-              {filteredReviews.length < reviews.length && (
-                <div className="text-center py-6 bg-gray-50 rounded-xl border border-gray-200">
-                  <p className="text-gray-600">
-                    Showing {filteredReviews.length} of {reviews.length} reviews
-                  </p>
-                </div>
-              )}
+              <div className="relative">
+                <select 
+                  value={sortBy || ""} onChange={(e) => setSortBy(e.target.value)}
+                  className="bg-white/5 border border-white/10 text-white px-4 py-2 rounded-xl text-sm font-bold outline-none appearance-none pr-10 cursor-pointer"
+                >
+                  <option value="newest" className="bg-[#0A192F]">Newest First</option>
+                  <option value="highest" className="bg-[#0A192F]">Highest Rated</option>
+                </select>
+                <ChevronDown size={16} className="text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
             </div>
-          )}
+
+            <div className="space-y-6">
+              {loading ? (
+                <div className="text-slate-400 text-center py-8">Loading...</div>
+              ) : filteredReviews.length === 0 ? (
+                <div className="text-slate-400 text-center py-8">No reviews found.</div>
+              ) : filteredReviews.map(review => (
+                <div key={review.id} className="p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 transition-all relative group">
+                  <div className="absolute top-6 right-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <Quote size={40} className="text-white" />
+                  </div>
+                  
+                  <div className="flex justify-between items-start mb-4 relative z-10">
+                    <div className="flex gap-4">
+                      <div className="w-12 h-12 rounded-full border-2 border-[#7C3AED] bg-slate-700 flex items-center justify-center font-bold text-white text-lg">
+                        {review.studentName ? review.studentName.charAt(0) : 'U'}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-white text-lg">{review.studentName}</h4>
+                        <p className="text-xs font-bold text-[#00E5FF] uppercase tracking-wider">{review.courseName}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="flex gap-1 justify-end mb-1">
+                        {[1,2,3,4,5].map(i => <Star key={i} size={14} className={i <= review.rating ? "text-yellow-400 fill-yellow-400" : "text-slate-600"} />)}
+                      </div>
+                      <span className="text-xs font-bold text-slate-500">{review.date}</span>
+                    </div>
+                  </div>
+                  <p className="text-slate-300 leading-relaxed relative z-10">{review.text}</p>
+                  
+                  <div className="flex gap-4 mt-6 pt-4 border-t border-white/10 relative z-10">
+                    <button className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-emerald-400 transition-colors">
+                      <ThumbsUp size={14} /> Helpful
+                    </button>
+                    <button className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-[#00E5FF] transition-colors">
+                      <MessageSquare size={14} /> Reply
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Sidebar */}
+        {/* Rating Breakdown */}
         <div className="space-y-6">
-          {/* Rating Distribution */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Rating Distribution</h3>
-            <div className="space-y-3">
-              {ratingDistribution.map(({ stars, count, percentage }) => (
-                <div key={stars} className="flex items-center gap-3">
-                  <div className="flex items-center gap-1 w-16">
-                    <span className="text-sm font-medium text-gray-600">{stars}</span>
-                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                  </div>
-                  <div className="flex-1 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-yellow-400 h-2 rounded-full transition-all duration-1000"
-                      style={{ width: `${percentage}%` }}
-                    ></div>
-                  </div>
-                  <div className="text-sm text-gray-600 w-12 text-right">
-                    {count} ({percentage}%)
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-purple-500" />
-              Recent Activity
-            </h3>
+          <div className="bg-[#0A192F]/60 backdrop-blur-md rounded-3xl p-6 border border-white/5 shadow-xl">
+            <h3 className="text-lg font-bold text-white mb-6">Rating Distribution</h3>
             <div className="space-y-4">
-              {recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                  <div className="p-2 bg-white rounded-lg shadow-sm">
-                    <activity.icon className="w-4 h-4 text-purple-600" />
+              {[5, 4, 3, 2, 1].map(stars => {
+                const count = reviews.filter(r => r.rating === stars).length;
+                const pct = totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
+                return (
+                  <div key={stars} className="flex items-center gap-3 text-sm">
+                    <span className="w-12 font-bold text-slate-400 flex items-center gap-1">{stars} <Star size={12} className="text-yellow-400 fill-yellow-400" /></span>
+                    <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-yellow-400 rounded-full" style={{ width: `${pct}%` }}></div>
+                    </div>
+                    <span className="w-8 text-right font-bold text-white">{pct}%</span>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">{activity.text}</p>
-                    <p className="text-xs text-gray-500">{activity.time}</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
-          {/* Response Rate */}
-          <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-6 text-white">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold">Response Rate</h3>
-              <MessageSquare className="w-5 h-5" />
-            </div>
-            <div className="text-2xl font-bold mb-2">92%</div>
-            <p className="text-green-100 text-sm">You're responding to reviews faster than 85% of instructors</p>
-            <div className="w-full bg-white/20 rounded-full h-2 mt-3">
-              <div className="bg-white h-2 rounded-full" style={{ width: '92%' }}></div>
+          <div className="bg-gradient-to-br from-emerald-500/20 to-teal-500/10 rounded-3xl p-6 border border-emerald-500/30">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-emerald-400 rounded-xl text-slate-900 mt-1">
+                <TrendingUp size={20} />
+              </div>
+              <div>
+                <h4 className="font-bold text-white mb-1">Excellent Performance</h4>
+                <p className="text-sm text-emerald-200/80 leading-relaxed">
+                  Your recent courses are receiving exceptionally positive feedback. Keep up the great work!
+                </p>
+              </div>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );

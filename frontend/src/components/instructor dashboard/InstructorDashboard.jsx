@@ -1,916 +1,359 @@
-import { API_URL } from "../../config/api";
-// // import React, { useState } from "react";
-// // import { useLocation, Link } from "react-router-dom";
-// // import { 
-// //   Bot, Users, BarChart3, BookOpen, DollarSign, MessageSquare, 
-// //   Coins, TrendingUp, FileText, Settings, Bell, Plus, Star, Award
-// // } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  LayoutDashboard, BookOpen, Users, DollarSign, MessageSquare, 
+  Settings, LogOut, Bell, Menu, X, PlusCircle, CheckSquare, 
+  UserCheck, Video, Activity, GraduationCap, Calendar
+} from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import OverviewContent from './OverviewContent';
+import InstructorMyCourses from './InstructorMyCourses';
+import InstructorStudents from './InstructorStudents';
+import ContentContent from './ContentContent';
+import EarningsContent from './EarningsContent';
+import ReviewsContent from './ReviewsContent';
+import SettingsContent from './SettingsContent';
+import CreateCourse from './CreateCourse';
+import InstructorTaskManagement from './InstructorTaskManagement';
+import InstructorAttendance from './InstructorAttendance';
+import InstructorEvents from './InstructorEvents';
+import InstructorLiveSession from './InstructorLiveSession';
+import InstructorLiveChat from './InstructorLiveChat';
+import { API_URL } from '../../config/api';
 
-// // // Import all content components
-
-// // import InstructorMyCourses from "./InstructorMyCourses";
-// // import ContentContent from "./ContentContent";
-// // import SettingsContent from "./SettingsContent";
-// // import ReviewsContent from "./ReviewsContent";
-// // import EarningsContent from "./EarningsContent";
-// // import StudentsContent from "./StudentsContent";
-// // import OverviewContent from "./OverviewContent";
-
-// // const InstructorDashboard = () => {
-// //   const location = useLocation();
-// //   const { email } = location.state || {};
-
-// //   const [activeTab, setActiveTab] = useState("overview");
-// //   const [sidebarOpen, setSidebarOpen] = useState(true);
-
-// //   // Mock data - you can pass this to components as props
-// //   const dashboardData = {
-// //     stats: {
-// //       totalStudents: 1247,
-// //       totalCourses: 8,
-// //       totalEarnings: 4580,
-// //       averageRating: 4.8,
-// //       activeStudents: 892,
-// //       completionRate: 78
-// //     },
-// //     courses: [
-// //       {
-// //         id: 1,
-// //         title: "Advanced React Development",
-// //         students: 324,
-// //         revenue: 1240,
-// //         rating: 4.9,
-// //         progress: 85,
-// //         status: "active",
-// //         price: 149,
-// //         thumbnail: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=250&fit=crop",
-// //         modules: 12,
-// //         category: "Web Development"
-// //       },
-// //       // ... more courses
-// //     ],
-// //     students: [
-// //       {
-// //         id: 1,
-// //         name: "Sarah Johnson",
-// //         email: "sarah@email.com",
-// //         course: "Advanced React",
-// //         joinDate: "2024-01-15",
-// //         progress: 92,
-// //         avatar: "https://randomuser.me/api/portraits/women/32.jpg"
-// //       },
-// //       // ... more students
-// //     ],
-// //     earnings: [
-// //       { month: "Jan", earnings: 3200 },
-// //       { month: "Feb", earnings: 2800 },
-// //       { month: "Mar", earnings: 4000 },
-// //       { month: "Apr", earnings: 3780 },
-// //       { month: "May", earnings: 5900 },
-// //       { month: "Jun", earnings: 4580 }
-// //     ],
-// //     reviews: [
-// //       {
-// //         id: 1,
-// //         student: "Sarah Johnson",
-// //         rating: 5,
-// //         comment: "Amazing course!",
-// //         date: "2024-01-20",
-// //         avatar: "https://randomuser.me/api/portraits/women/32.jpg",
-// //         course: "Advanced React Development"
-// //       }
-// //     ]
-// //   };
-// // ``
-// //   // Navigation items
-// //   const navItems = [
-// //     { icon: BarChart3, label: "Overview", id: "overview" },
-// //     { icon: BookOpen, label: "My Courses", id: "courses" },
-// //     { icon: Users, label: "Students", id: "students" },
-// //     { icon: DollarSign, label: "Earnings", id: "earnings" },
-// //     { icon: MessageSquare, label: "Reviews", id: "reviews" },
-// //     { icon: FileText, label: "Content", id: "content" },
-// //     { icon: Settings, label: "Settings", id: "settings" }
-// //   ];
-
-// //   // Render different content based on active tab
-// //   const renderContent = () => {
-// //     switch (activeTab) {
-// //       case "overview":
-// //         return <OverviewContent data={dashboardData} />;
-// //       case "courses":
-// //         return <InstructorMyCourses data={dashboardData} />;
-// //       case "students":
-// //         return <StudentsContent data={dashboardData} />;
-// //       case "earnings":
-// //         return <EarningsContent data={dashboardData} />;
-// //       case "reviews":
-// //         return <ReviewsContent data={dashboardData} />;
-// //       case "content":
-// //         return <ContentContent />;
-// //       case "settings":
-// //         return <SettingsContent email={email} />;
-// //       default:
-// //         return <OverviewContent data={dashboardData} />;
-// //     }
-// //   };
-
-// //   return (
-// //     <div className="min-h-screen bg-gray-50 flex">
-// //       {/* Sidebar */}
-// //       <div className={`bg-white shadow-lg transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'}`}>
-// //         <div className="p-6 border-b border-gray-200">
-// //           <div className="flex items-center gap-3">
-// //             <Bot className="text-purple-600 w-8 h-8" />
-// //             {sidebarOpen && (
-// //               <div>
-// //                 <span className="text-xl font-bold text-gray-900">BotVortex</span>
-// //                 <div className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full mt-1">
-// //                   Instructor
-// //                 </div>
-// //               </div>
-// //             )}
-// //           </div>
-// //         </div>
-
-// //         <nav className="p-4 space-y-2">
-// //           {navItems.map((item) => (
-// //             <button
-// //               key={item.id}
-// //               onClick={() => setActiveTab(item.id)}
-// //               className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all duration-200 ${
-// //                 activeTab === item.id
-// //                   ? "bg-purple-50 text-purple-700 border-r-2 border-purple-600"
-// //                   : "text-gray-600 hover:bg-gray-100"
-// //               }`}
-// //             >
-// //               <item.icon className="w-5 h-5" />
-// //               {sidebarOpen && <span className="font-medium">{item.label}</span>}
-// //             </button>
-// //           ))}
-// //         </nav>
-// //       </div>
-
-// //       {/* Main Content */}
-// //       <div className="flex-1 overflow-auto">
-// //         {/* Header */}
-// //         <header className="bg-white shadow-sm border-b border-gray-200">
-// //           <div className="px-6 py-4">
-// //             <div className="flex items-center justify-between">
-// //               <div className="flex items-center gap-4">
-// //                 <button
-// //                   onClick={() => setSidebarOpen(!sidebarOpen)}
-// //                   className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-// //                 >
-// //                   <div className="w-5 h-5">
-// //                     <div className="w-full h-0.5 bg-gray-600 mb-1"></div>
-// //                     <div className="w-full h-0.5 bg-gray-600 mb-1"></div>
-// //                     <div className="w-full h-0.5 bg-gray-600"></div>
-// //                   </div>
-// //                 </button>
-// //                 <h1 className="text-2xl font-bold text-gray-900">
-// //                   {navItems.find(item => item.id === activeTab)?.label || "Instructor Dashboard"}
-// //                 </h1>
-// //               </div>
-
-// //               <div className="flex items-center gap-4">
-// //                 {/* Rewards Coins */}
-// //                 <Link 
-// //                   to="/buy-coins"
-// //                   className="flex items-center gap-2 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 px-4 py-2 rounded-full hover:border-yellow-300 transition-all duration-300 cursor-pointer group"
-// //                 >
-// //                   <Coins className="w-5 h-5 text-yellow-500 group-hover:scale-110 transition-transform" />
-// //                   <span className="font-bold text-gray-900">5,420</span>
-// //                 </Link>
-
-// //                 {/* Notifications */}
-// //                 <button className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
-// //                   <Bell className="w-5 h-5 text-gray-600" />
-// //                   <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
-// //                 </button>
-
-// //                 {/* User Profile */}
-// //                 <div className="flex items-center gap-3">
-// //                   <img
-// //                     src="https://randomuser.me/api/portraits/men/32.jpg"
-// //                     alt="Instructor"
-// //                     className="w-10 h-10 rounded-full border-2 border-purple-200"
-// //                   />
-// //                   <div className="text-right">
-// //                     <div className="font-semibold text-gray-900">John D.</div>
-// //                     <div className="text-sm text-gray-500">{email}</div>
-// //                   </div>
-// //                 </div>
-// //               </div>
-// //             </div>
-// //           </div>
-// //         </header>
-
-// //         {/* Main Content Area - Changes based on active tab */}
-// //         <main className="p-6">
-// //           {renderContent()}
-// //         </main>
-// //       </div>
-// //     </div>
-// //   );
-// // };
-
-// // export default InstructorDashboard;
-
-// import React, { useState } from "react";
-// import { useLocation, Link } from "react-router-dom";
-// import { 
-//   Bot, Users, BarChart3, BookOpen, DollarSign, MessageSquare, 
-//   Coins, TrendingUp, FileText, Settings, Bell, Plus, Star, Award
-// } from "lucide-react";
-
-// // Import all content components
-
-// import InstructorMyCourses from "./InstructorMyCourses";
-// import ContentContent from "./ContentContent";
-// import SettingsContent from "./SettingsContent";
-// import ReviewsContent from "./ReviewsContent";
-// import EarningsContent from "./EarningsContent";
-// import StudentsContent from "./StudentsContent";
-// import OverviewContent from "./OverviewContent";
-
-// const InstructorDashboard = () => {
-//   const location = useLocation();
-//   const { email } = location.state || {};
-
-//   const [activeTab, setActiveTab] = useState("overview");
-//   const [sidebarOpen, setSidebarOpen] = useState(true);
-
-//   // Mock data - you can pass this to components as props
-//   const dashboardData = {
-//     stats: {
-//       totalStudents: 1247,
-//       totalCourses: 8,
-//       totalEarnings: 4580,
-//       averageRating: 4.8,
-//       activeStudents: 892,
-//       completionRate: 78
-//     },
-//     courses: [
-//       {
-//         id: 1,
-//         title: "Advanced React Development",
-//         students: 324,
-//         revenue: 1240,
-//         rating: 4.9,
-//         progress: 85,
-//         status: "active",
-//         price: 149,
-//         thumbnail: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=250&fit=crop",
-//         modules: 12,
-//         category: "Web Development"
-//       },
-//       // ... more courses
-//     ],
-//     students: [
-//       {
-//         id: 1,
-//         name: "Sarah Johnson",
-//         email: "sarah@email.com",
-//         course: "Advanced React",
-//         joinDate: "2024-01-15",
-//         progress: 92,
-//         avatar: "https://randomuser.me/api/portraits/women/32.jpg"
-//       },
-//       // ... more students
-//     ],
-//     earnings: [
-//       { month: "Jan", earnings: 3200 },
-//       { month: "Feb", earnings: 2800 },
-//       { month: "Mar", earnings: 4000 },
-//       { month: "Apr", earnings: 3780 },
-//       { month: "May", earnings: 5900 },
-//       { month: "Jun", earnings: 4580 }
-//     ],
-//     reviews: [
-//       {
-//         id: 1,
-//         student: "Sarah Johnson",
-//         rating: 5,
-//         comment: "Amazing course!",
-//         date: "2024-01-20",
-//         avatar: "https://randomuser.me/api/portraits/women/32.jpg",
-//         course: "Advanced React Development"
-//       }
-//     ]
-//   };
-// ``
-//   // Navigation items
-//   const navItems = [
-//     { icon: BarChart3, label: "Overview", id: "overview" },
-//     { icon: BookOpen, label: "My Courses", id: "courses" },
-//     { icon: Users, label: "Students", id: "students" },
-//     { icon: DollarSign, label: "Earnings", id: "earnings" },
-//     { icon: MessageSquare, label: "Reviews", id: "reviews" },
-//     { icon: FileText, label: "Content", id: "content" },
-//     { icon: Settings, label: "Settings", id: "settings" }
-//   ];
-
-//   // Render different content based on active tab
-//   const renderContent = () => {
-//     switch (activeTab) {
-//       case "overview":
-//         return <OverviewContent data={dashboardData} />;
-//       case "courses":
-//         return <InstructorMyCourses data={dashboardData} />;
-//       case "students":
-//         return <StudentsContent data={dashboardData} />;
-//       case "earnings":
-//         return <EarningsContent data={dashboardData} />;
-//       case "reviews":
-//         return <ReviewsContent data={dashboardData} />;
-//       case "content":
-//         return <ContentContent />;
-//       case "settings":
-//         return <SettingsContent email={email} />;
-//       default:
-//         return <OverviewContent data={dashboardData} />;
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gray-50 flex">
-//       {/* Sidebar */}
-//       <div className={`bg-white shadow-lg transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'}`}>
-//         <div className="p-6 border-b border-gray-200">
-//           <div className="flex items-center gap-3">
-//             <Bot className="text-purple-600 w-8 h-8" />
-//             {sidebarOpen && (
-//               <div>
-//                 <span className="text-xl font-bold text-gray-900">BotVortex</span>
-//                 <div className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full mt-1">
-//                   Instructor
-//                 </div>
-//               </div>
-//             )}
-//           </div>
-//         </div>
-
-//         <nav className="p-4 space-y-2">
-//           {navItems.map((item) => (
-//             <button
-//               key={item.id}
-//               onClick={() => setActiveTab(item.id)}
-//               className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all duration-200 ${
-//                 activeTab === item.id
-//                   ? "bg-purple-50 text-purple-700 border-r-2 border-purple-600"
-//                   : "text-gray-600 hover:bg-gray-100"
-//               }`}
-//             >
-//               <item.icon className="w-5 h-5" />
-//               {sidebarOpen && <span className="font-medium">{item.label}</span>}
-//             </button>
-//           ))}
-//         </nav>
-//       </div>
-
-//       {/* Main Content */}
-//       <div className="flex-1 overflow-auto">
-//         {/* Header */}
-//         <header className="bg-white shadow-sm border-b border-gray-200">
-//           <div className="px-6 py-4">
-//             <div className="flex items-center justify-between">
-//               <div className="flex items-center gap-4">
-//                 <button
-//                   onClick={() => setSidebarOpen(!sidebarOpen)}
-//                   className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-//                 >
-//                   <div className="w-5 h-5">
-//                     <div className="w-full h-0.5 bg-gray-600 mb-1"></div>
-//                     <div className="w-full h-0.5 bg-gray-600 mb-1"></div>
-//                     <div className="w-full h-0.5 bg-gray-600"></div>
-//                   </div>
-//                 </button>
-//                 <h1 className="text-2xl font-bold text-gray-900">
-//                   {navItems.find(item => item.id === activeTab)?.label || "Instructor Dashboard"}
-//                 </h1>
-//               </div>
-
-//               <div className="flex items-center gap-4">
-//                 {/* Rewards Coins */}
-//                 <Link 
-//                   to="/buy-coins"
-//                   className="flex items-center gap-2 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 px-4 py-2 rounded-full hover:border-yellow-300 transition-all duration-300 cursor-pointer group"
-//                 >
-//                   <Coins className="w-5 h-5 text-yellow-500 group-hover:scale-110 transition-transform" />
-//                   <span className="font-bold text-gray-900">5,420</span>
-//                 </Link>
-
-//                 {/* Notifications */}
-//                 <button className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
-//                   <Bell className="w-5 h-5 text-gray-600" />
-//                   <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
-//                 </button>
-
-//                 {/* User Profile */}
-//                 <div className="flex items-center gap-3">
-//                   <img
-//                     src="https://randomuser.me/api/portraits/men/32.jpg"
-//                     alt="Instructor"
-//                     className="w-10 h-10 rounded-full border-2 border-purple-200"
-//                   />
-//                   <div className="text-right">
-//                     <div className="font-semibold text-gray-900">John D.</div>
-//                     <div className="text-sm text-gray-500">{email}</div>
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-//         </header>
-
-//         {/* Main Content Area - Changes based on active tab */}
-//         <main className="p-6">
-//           {renderContent()}
-//         </main>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default InstructorDashboard;
-
-import React, { useState, useEffect } from "react";
-import { useLocation, Link } from "react-router-dom";
-import {
-  Bot, Users, BarChart3, BookOpen, DollarSign, MessageSquare,
-  Coins, TrendingUp, FileText, Settings, Bell, Plus, Star, Award,
-  X, CheckCircle, AlertCircle, Info, UserPlus, StarIcon
-} from "lucide-react";
-
-// Import all content components
-import InstructorMyCourses from "./InstructorMyCourses";
-import ContentContent from "./ContentContent";
-import SettingsContent from "./SettingsContent";
-import ReviewsContent from "./ReviewsContent";
-import EarningsContent from "./EarningsContent";
-import StudentsContent from "./StudentsContent";
-import OverviewContent from "./OverviewContent";
-
-const InstructorDashboard = ({ defaultTab = "overview" }) => {
-  const location = useLocation();
-  const { email } = location.state || {};
-
-  const [activeTab, setActiveTab] = useState(defaultTab);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+const InstructorDashboard = () => {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [dashboardData, setDashboardData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
+  
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [instructor, setInstructor] = useState({
+    name: "Instructor",
+    role: "Senior Robotics Instructor",
+    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+    email: "",
+    stats: {
+      totalStudents: 0,
+      totalCourses: 0,
+      totalEarnings: 0,
+      averageRating: 0
+    }
+  });
+
+  const fetchDashboardData = async () => {
+    try {
+      const token = localStorage.getItem("instructorToken") || localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/instructor/dashboard`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem("instructorToken"); // clear invalid token
+        navigate("/login");
+        return;
+      }
+
+      if (res.ok) {
+        const data = await res.json();
+        setInstructor(prev => ({
+          ...prev,
+          name: data.fullName || prev.name,
+          avatar: data.avatar ? `${API_URL.replace('/api', '')}${data.avatar}` : prev.avatar,
+          stats: data.stats || prev.stats,
+          courses: data.courses || []
+        }));
+      } else {
+        console.error("Dashboard failed:", await res.json());
+      }
+    } catch (err) {
+      console.error("Error fetching dashboard data", err);
+    }
+  };
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      const token = localStorage.getItem("instructor_token");
-      const storedUser = JSON.parse(localStorage.getItem("instructor_user"));
 
-      if (!token || !storedUser) {
-        setLoading(false);
-        return;
-      }
-
-      // Check for instructor role
-      if (storedUser.role !== "instructor") {
-        setDashboardData(null); // This will trigger the "Access Denied" view
-        setLoading(false);
-        return;
-      }
-
-      setUser(storedUser);
-
+    const fetchNotifications = async () => {
       try {
-        const response = await fetch(`${API_URL}/instructor/dashboard`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setDashboardData(data);
-        }
-
-        // Fetch fresh user data to sync coins
-        const userRes = await fetch(`${API_URL}/instructor/settings`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (userRes.ok) {
-          const freshUser = await userRes.json();
-          setUser(prev => ({ ...prev, ...freshUser }));
-          localStorage.setItem("instructor_user", JSON.stringify({ ...storedUser, ...freshUser }));
+        const token = localStorage.getItem("instructorToken") || localStorage.getItem("token");
+        if (token) {
+          const res = await fetch(`${API_URL}/instructor/notifications`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setNotifications(data);
+          }
         }
       } catch (err) {
-        console.error("Error fetching instructor data:", err);
-      } finally {
-        setLoading(false);
+        console.error("Error fetching notifications", err);
       }
     };
 
     fetchDashboardData();
+    fetchNotifications();
+    
+    // Check for locally saved notifications from features not yet fully backend-integrated
+    const localNotifs = JSON.parse(localStorage.getItem('studentNotifications') || '[]');
+    if (localNotifs.length > 0) {
+      setNotifications(prev => [...localNotifs, ...prev].sort((a,b) => new Date(b.createdAt || b.time) - new Date(a.createdAt || a.time)));
+    }
   }, []);
 
-  const [notifications, setNotifications] = useState([]);
-
   useEffect(() => {
-    // Only poll for notifications if we have a user and they are an instructor
-    if (!user || user.role !== "instructor") return;
-
-    const fetchNotifications = async () => {
-      const token = localStorage.getItem("instructor_token");
-      if (!token) return;
-
-      try {
-        const response = await fetch(`${API_URL}/instructor/notifications`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          // Map backend notifications to include icons
-          const formatted = data.map(n => ({
-            ...n,
-            id: n._id,
-            icon: n.icon === "UserPlus" ? UserPlus :
-              n.icon === "StarIcon" ? StarIcon :
-                n.icon === "MessageSquare" ? MessageSquare : Bell,
-            time: formatRelativeTime(n.createdAt)
-          }));
-          setNotifications(formatted);
-        }
-      } catch (err) {
-        console.error("Error fetching notifications:", err);
-      }
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
     };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 60000); // Polling every minute
-    return () => clearInterval(interval);
-  }, [user]);
-
-  const formatRelativeTime = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - date) / 1000);
-
-    if (diffInSeconds < 60) return "Just now";
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    return `${Math.floor(diffInSeconds / 86400)}d ago`;
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-      </div>
-    );
-  }
-
-  if (!dashboardData) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center text-center p-4">
-        <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
-        <p className="text-gray-600 mb-6">You must be logged in as an instructor to access this dashboard.</p>
-        <Link to="/login" className="bg-purple-600 text-white px-6 py-2 rounded-lg font-bold">Go to Login</Link>
-      </div>
-    );
-  }
-
-  // Navigation items
   const navItems = [
-    { icon: BarChart3, label: "Overview", id: "overview" },
-    { icon: BookOpen, label: "My Courses", id: "courses" },
-    { icon: Users, label: "Students", id: "students" },
-    { icon: DollarSign, label: "Earnings", id: "earnings" },
-    { icon: MessageSquare, label: "Reviews", id: "reviews" },
-    { icon: FileText, label: "Content", id: "content" },
-    { icon: Settings, label: "Settings", id: "settings" }
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { id: 'courses', label: 'Course Builder', icon: Video },
+    { id: 'events', label: 'Upcoming Events', icon: Calendar },
+    { id: 'live', label: 'Live Sessions', icon: Bell },
+    { id: 'tasks', label: 'Projects & Tasks', icon: CheckSquare },
+    { id: 'students', label: 'My Students', icon: Users },
+    { id: 'attendance', label: 'Attendance', icon: UserCheck },
+    { id: 'earnings', label: 'Earnings', icon: DollarSign },
+    { id: 'reviews', label: 'Reviews', icon: MessageSquare },
+    { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
-  // Toggle notification panel
-  const toggleNotifications = () => {
-    setShowNotifications(!showNotifications);
-    // Mark all notifications as read when opening
-    if (!showNotifications) {
-      markAllAsRead();
-    }
-  };
-
-  // Mark a single notification as read
-  const markAsRead = async (id) => {
-    const token = localStorage.getItem("instructor_token");
-    if (!token) return;
-
+  const markNotificationRead = async (id) => {
     try {
+      const token = localStorage.getItem("instructorToken") || localStorage.getItem("token");
       await fetch(`${API_URL}/instructor/notifications/${id}/read`, {
-        method: "PUT",
+        method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       });
-      setNotifications(notifications.map(notification =>
-        notification.id === id ? { ...notification, read: true } : notification
-      ));
+      setNotifications(prev => prev.map(n => n._id === id ? { ...n, read: true } : n));
     } catch (err) {
-      console.error("Error marking notification as read:", err);
+      console.error(err);
     }
   };
 
-  // Mark all notifications as read
-  const markAllAsRead = async () => {
-    const token = localStorage.getItem("instructor_token");
-    if (!token) return;
-
+  const markAllRead = async () => {
     try {
+      const token = localStorage.getItem("instructorToken") || localStorage.getItem("token");
       await fetch(`${API_URL}/instructor/notifications/read-all`, {
-        method: "PUT",
+        method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       });
-      setNotifications(notifications.map(notification => ({
-        ...notification,
-        read: true
-      })));
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     } catch (err) {
-      console.error("Error marking all notifications as read:", err);
+      console.error(err);
     }
   };
 
-  // Delete a notification (Local UI removal for now as backend doesn't have delete yet)
-  const deleteNotification = (id, e) => {
-    e.stopPropagation();
-    setNotifications(notifications.filter(notification => notification.id !== id));
-  };
+  const unreadCount = notifications.filter(n => !n.read).length;
 
-  // Clear all (Local UI removal)
-  const clearAllNotifications = () => {
-    setNotifications([]);
-  };
-
-  // Get unread notifications count
-  const unreadCount = notifications.filter(notification => !notification.read).length;
-
-  // Get notification icon color based on type
-  const getNotificationIconColor = (type) => {
-    switch (type) {
-      case "success": return "text-green-500";
-      case "warning": return "text-yellow-500";
-      case "error": return "text-red-500";
-      case "info":
-      default: return "text-blue-500";
-    }
-  };
-
-  // Get notification background color based on type
-  const getNotificationBgColor = (type) => {
-    switch (type) {
-      case "success": return "bg-green-50 border-green-200";
-      case "warning": return "bg-yellow-50 border-yellow-200";
-      case "error": return "bg-red-50 border-red-200";
-      case "info":
-      default: return "bg-blue-50 border-blue-200";
-    }
-  };
-
-  // Handle notification click
-  const handleNotificationClick = (notification) => {
-    if (!notification.read) {
-      markAsRead(notification.id);
-    }
-    // Here you can add navigation logic based on notification action
-    console.log("Notification clicked:", notification);
-    setShowNotifications(false);
-  };
-
-  // Render different content based on active tab
   const renderContent = () => {
     switch (activeTab) {
-      case "overview":
-        return <OverviewContent data={dashboardData} />;
-      case "courses":
-        return <InstructorMyCourses data={dashboardData} />;
-      case "students":
-        return <StudentsContent data={dashboardData} />;
-      case "earnings":
-        return <EarningsContent data={dashboardData} />;
-      case "reviews":
-        return <ReviewsContent data={dashboardData} />;
-      case "content":
-        return <ContentContent />;
-      case "settings":
-        return <SettingsContent user={user} />;
+      case 'overview':
+        return <OverviewContent instructor={instructor} />;
+      case 'courses':
+        return <CreateCourse instructor={instructor} />;
+      case 'events':
+        return <InstructorEvents instructor={instructor} />;
+      case 'live':
+        return <InstructorLiveSession instructor={instructor} />;
+      case 'tasks':
+        return <InstructorTaskManagement instructor={instructor} />;
+      case 'students':
+        return <InstructorStudents instructor={instructor} />;
+      case 'attendance':
+        return <InstructorAttendance instructor={instructor} />;
+      case 'earnings':
+        return <EarningsContent instructor={instructor} />;
+      case 'reviews':
+        return <ReviewsContent instructor={instructor} />;
+      case 'settings':
+        return <SettingsContent instructor={instructor} onUpdate={fetchDashboardData} />;
       default:
-        return <OverviewContent data={dashboardData} />;
+        return <OverviewContent instructor={instructor} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <div className={`bg-white shadow-lg transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'}`}>
-        <div className="p-6 border-b border-gray-200">
+    <div className="min-h-screen bg-[#060D1A] text-slate-300 font-sans selection:bg-[#00E5FF]/30">
+      
+      {/* Top Navbar */}
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+        scrolled ? 'bg-[#0A192F]/90 backdrop-blur-xl border-b border-white/5 py-3 shadow-2xl' : 'bg-transparent py-5'
+      }`}>
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Bot className="text-purple-600 w-8 h-8" />
-            {sidebarOpen && (
-              <div>
-                <span className="text-xl font-bold text-gray-900">BotVortex</span>
-                <div className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full mt-1">
-                  Instructor
-                </div>
-              </div>
-            )}
+            <div className="w-10 h-10 bg-gradient-to-r from-[#7C3AED] to-[#00E5FF] rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(124,58,237,0.3)]">
+              <GraduationCap className="text-white w-6 h-6" />
+            </div>
+            <div>
+              <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-wider">
+                BOTVORTEX
+              </span>
+              <span className="block text-[10px] font-bold text-[#00E5FF] uppercase tracking-[0.2em] -mt-1">
+                Instructor Hub
+              </span>
+            </div>
           </div>
-        </div>
 
-        <nav className="p-4 space-y-2">
-          {navItems.map((item) => (
+          <div className="hidden lg:flex items-center gap-6 relative">
+            <button 
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative p-2 text-slate-400 hover:text-white transition-colors"
+            >
+              <Bell size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#00E5FF] rounded-full border border-[#0A192F] animate-pulse"></span>
+              )}
+            </button>
+
+            {/* Notification Dropdown */}
+            <AnimatePresence>
+              {showNotifications && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute top-full right-0 mt-4 w-80 bg-[#0A192F] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50"
+                >
+                  <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
+                    <h3 className="text-white font-bold">Notifications</h3>
+                    {unreadCount > 0 && (
+                      <button onClick={markAllRead} className="text-xs text-[#00E5FF] hover:text-white transition-colors">
+                        Mark all as read
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {notifications.length > 0 ? (
+                      notifications.map((notif, index) => (
+                        <div 
+                          key={notif._id || index}
+                          onClick={() => !notif.read && markNotificationRead(notif._id)}
+                          className={`p-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer flex gap-3 ${!notif.read ? 'bg-white/5' : ''}`}
+                        >
+                          <div className={`p-2 rounded-xl h-fit shrink-0 ${!notif.read ? 'bg-[#00E5FF]/20 text-[#00E5FF]' : 'bg-slate-800 text-slate-400'}`}>
+                            {notif.icon === 'Clock' ? <Activity size={18} /> : <BookOpen size={18} />}
+                          </div>
+                          <div>
+                            <p className={`text-sm mb-1 ${!notif.read ? 'text-white font-medium' : 'text-slate-300'}`}>
+                              {notif.title}
+                            </p>
+                            <p className="text-xs text-slate-400 mb-2">{notif.message}</p>
+                            <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">
+                              {new Date(notif.createdAt || Date.now()).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-8 text-center text-slate-400">
+                        <Bell className="w-8 h-8 mx-auto mb-3 opacity-20" />
+                        <p className="text-sm">No new notifications</p>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="h-8 w-[1px] bg-white/10"></div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-sm font-bold text-white">{instructor.name}</p>
+                <p className="text-xs text-[#00E5FF]">{instructor.role}</p>
+              </div>
+              <img src={instructor.avatar || "https://randomuser.me/api/portraits/men/32.jpg"} alt="Profile" className="w-10 h-10 rounded-full border-2 border-[#7C3AED] object-cover" />
+            </div>
+          </div>
+          
+          <button className="lg:hidden text-white" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+      </nav>
+
+      {/* Main Layout */}
+      <div className="pt-28 pb-12 px-4 md:px-6 max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
+        
+        {/* Sidebar Nav (Desktop) */}
+        <aside className="hidden lg:flex flex-col w-64 shrink-0 bg-gradient-to-b from-[#112240]/90 to-[#0A192F]/90 backdrop-blur-2xl border border-[#7C3AED]/20 rounded-3xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.5)] h-fit sticky top-28">
+          <div className="space-y-2">
+            {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all duration-200 ${activeTab === item.id
-                ? "bg-purple-50 text-purple-700 border-r-2 border-purple-600"
-                : "text-gray-600 hover:bg-gray-100"
-                }`}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-bold text-sm ${
+                activeTab === item.id 
+                  ? 'bg-gradient-to-r from-[#7C3AED]/20 to-[#00E5FF]/20 text-white border border-white/10 shadow-lg' 
+                  : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+              }`}
             >
-              <item.icon className="w-5 h-5" />
-              {sidebarOpen && <span className="font-medium">{item.label}</span>}
+              <item.icon size={18} className={activeTab === item.id ? 'text-[#00E5FF]' : ''} />
+              {item.label}
             </button>
-          ))}
-        </nav>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200">
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="w-5 h-5">
-                    <div className="w-full h-0.5 bg-gray-600 mb-1"></div>
-                    <div className="w-full h-0.5 bg-gray-600 mb-1"></div>
-                    <div className="w-full h-0.5 bg-gray-600"></div>
-                  </div>
-                </button>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  {navItems.find(item => item.id === activeTab)?.label || "Instructor Dashboard"}
-                </h1>
-              </div>
-
-              <div className="flex items-center gap-4">
-
-                {/* Instructor Earnings Display */}
-                <div
-                  className="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 px-4 py-2 rounded-full hover:border-purple-300 transition-all duration-300 cursor-pointer group shadow-sm"
-                >
-                  <DollarSign className="w-5 h-5 text-purple-600 group-hover:scale-110 transition-transform" />
-                  <div className="flex flex-col">
-                    <p className="text-[10px] text-purple-400 font-bold uppercase tracking-tighter leading-none mb-1">Total Revenue</p>
-                    <span className="font-bold text-gray-900 leading-none">₹{(user?.coins || 0).toLocaleString()}</span>
-                  </div>
-                </div>
-
-                {/* Notifications */}
-                <div className="relative">
-                  <button
-                    onClick={toggleNotifications}
-                    className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <Bell className="w-5 h-5 text-gray-600" />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full border-2 border-white text-xs text-white flex items-center justify-center font-medium">
-                        {unreadCount}
-                      </span>
-                    )}
-                  </button>
-
-                  {/* Notification Dropdown */}
-                  {showNotifications && (
-                    <div className="absolute right-0 top-12 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
-                      {/* Header */}
-                      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                        <h3 className="font-semibold text-gray-900">Notifications</h3>
-                        <div className="flex gap-2">
-                          {notifications.length > 0 && (
-                            <>
-                              <button
-                                onClick={markAllAsRead}
-                                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
-                              >
-                                Mark all read
-                              </button>
-                              <button
-                                onClick={clearAllNotifications}
-                                className="text-sm text-gray-500 hover:text-gray-700"
-                              >
-                                Clear all
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Notifications List */}
-                      <div className="max-h-96 overflow-y-auto">
-                        {notifications.length === 0 ? (
-                          <div className="p-8 text-center">
-                            <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                            <p className="text-gray-500 text-sm">No notifications</p>
-                            <p className="text-gray-400 text-xs mt-1">New notifications will appear here</p>
-                          </div>
-                        ) : (
-                          notifications.map((notification) => {
-                            const IconComponent = notification.icon;
-                            return (
-                              <div
-                                key={notification.id}
-                                onClick={() => handleNotificationClick(notification)}
-                                className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer ${!notification.read ? 'bg-blue-50' : ''
-                                  }`}
-                              >
-                                <div className="flex gap-3">
-                                  <div className="flex-shrink-0">
-                                    <IconComponent className={`w-5 h-5 ${getNotificationIconColor(notification.type)}`} />
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-start justify-between">
-                                      <p className="font-medium text-gray-900 text-sm">
-                                        {notification.title}
-                                      </p>
-                                      <button
-                                        onClick={(e) => deleteNotification(notification.id, e)}
-                                        className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0 ml-2"
-                                      >
-                                        <X className="w-4 h-4" />
-                                      </button>
-                                    </div>
-                                    <p className="text-gray-600 text-sm mt-1">
-                                      {notification.message}
-                                    </p>
-                                    <div className="flex items-center justify-between mt-2">
-                                      <span className="text-xs text-gray-500">
-                                        {notification.time}
-                                      </span>
-                                      {!notification.read && (
-                                        <span className="inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-
-                      {/* Footer */}
-                      {notifications.length > 0 && (
-                        <div className="p-3 border-t border-gray-200 bg-gray-50 rounded-b-lg">
-                          <button className="w-full text-center text-sm text-purple-600 hover:text-purple-700 font-medium">
-                            View All Notifications
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* User Profile */}
-                <div className="flex items-center gap-3">
-                  <img
-                    src="https://randomuser.me/api/portraits/men/32.jpg"
-                    alt="Instructor"
-                    className="w-10 h-10 rounded-full border-2 border-purple-200"
-                  />
-                  <div className="text-right">
-                    <div className="text-[10px] font-black text-purple-600 uppercase tracking-widest leading-none mb-1">Professional Instructor</div>
-                    <div className="font-semibold text-gray-900">{user?.fullName || "Instructor"}</div>
-                    <div className="text-sm text-gray-500">{user?.email || email}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
-        </header>
+          <div className="pt-6 mt-6 border-t border-white/5">
+            <button 
+              onClick={() => navigate('/')}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-bold text-sm text-red-400 hover:bg-red-400/10 w-full"
+            >
+              <LogOut size={18} />
+              Exit to Portal
+            </button>
+          </div>
+        </aside>
 
-        {/* Main Content Area - Changes based on active tab */}
-        <main className="p-6">
-          {renderContent()}
+        {/* Mobile Nav */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="lg:hidden overflow-hidden bg-[#0A192F] rounded-2xl border border-white/10 p-4 space-y-2 shadow-2xl"
+            >
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 w-full font-bold text-sm ${
+                    activeTab === item.id 
+                      ? 'bg-gradient-to-r from-[#7C3AED]/20 to-[#00E5FF]/20 text-white border border-white/10' 
+                      : 'text-slate-400 hover:bg-white/5'
+                  }`}
+                >
+                  <item.icon size={18} className={activeTab === item.id ? 'text-[#00E5FF]' : ''} />
+                  {item.label}
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Main Content Area */}
+        <main className="flex-1 min-w-0">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {renderContent()}
+            </motion.div>
+          </AnimatePresence>
         </main>
-      </div >
-
-      {/* Overlay for closing notifications when clicking outside */}
-      {
-        showNotifications && (
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setShowNotifications(false)}
-          />
-        )
-      }
-    </div >
+      </div>
+    </div>
   );
 };
 

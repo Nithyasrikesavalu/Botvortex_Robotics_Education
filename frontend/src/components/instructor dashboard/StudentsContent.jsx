@@ -27,7 +27,7 @@ const StudentsContent = () => {
 
   useEffect(() => {
     const fetchStudents = async () => {
-      const token = localStorage.getItem("instructor_token");
+      const token = localStorage.getItem("instructorToken") || (localStorage.getItem("instructorToken") || localStorage.getItem("token"));
       if (!token) return;
 
       try {

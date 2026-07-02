@@ -41,7 +41,8 @@ const userSchema = new mongoose.Schema(
       company: String,
       website: String
     },
-    coins: { type: Number, default: 0 }
+    coins: { type: Number, default: 0 },
+    avatar: { type: String, default: "" }
   },
   { timestamps: true }
 );

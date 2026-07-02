@@ -986,8 +986,116 @@ import {
   Rocket,
 } from "lucide-react";
 
-const SettingsPage = () => {
+const Switch = ({ enabled, onChange, size = "md" }) => (
+  <button
+    onClick={() => onChange(!enabled)}
+    className={`relative inline-flex items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+      size === "sm" ? "h-5 w-9" : "h-6 w-11"
+    } ${enabled ? "bg-gradient-to-r from-blue-500 to-purple-500 shadow-md" : "bg-gray-200"}`}
+  >
+    <span
+      className={`inline-block transform bg-white rounded-full transition-all duration-300 shadow-md ${
+        size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4"
+      } ${enabled ? (size === "sm" ? "translate-x-5" : "translate-x-6") : "translate-x-1"}`}
+    />
+  </button>
+);
+
+const TabButton = ({ tab, icon: Icon, label, color, gradient, isActive, onClick }) => (
+  <motion.button
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    onClick={() => onClick(tab)}
+    className={`relative flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 w-full text-left overflow-hidden ${
+      isActive
+        ? `text-white shadow-lg`
+        : "text-gray-600 hover:bg-gray-50"
+    }`}
+  >
+    {isActive && (
+      <motion.div
+        layoutId="activeTabBg"
+        className={`absolute inset-0 bg-gradient-to-r ${gradient}`}
+        initial={false}
+        transition={{ type: "spring", duration: 0.5 }}
+      />
+    )}
+    <Icon className={`relative z-10 ${isActive ? "text-white" : "text-gray-500"}`} size={18} />
+    <span className={`relative z-10 text-sm md:text-base ${isActive ? "font-semibold" : ""}`}>
+      {label}
+    </span>
+    {isActive && (
+      <motion.div
+        layoutId="activeTabIndicator"
+        className="absolute right-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full"
+      />
+    )}
+  </motion.button>
+);
+
+const InputField = ({ label, value, onChange, type = "text", placeholder, icon: Icon, required }) => (
+  <div className="space-y-2">
+    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+      {Icon && <Icon size={14} className="text-gray-400" />}
+      {label}
+      {required && <span className="text-red-500 text-xs">*</span>}
+    </label>
+    <div className="relative group">
+      <input
+        type={type}
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 group-hover:border-gray-300"
+      />
+    </div>
+  </div>
+);
+
+const SelectField = ({ label, value, onChange, options, icon: Icon }) => (
+  <div className="space-y-2">
+    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+      {Icon && <Icon size={14} className="text-gray-400" />}
+      {label}
+    </label>
+    <select
+      value={value || ""}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 cursor-pointer"
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  </div>
+);
+
+const SettingCard = ({ title, icon: Icon, children, gradient }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3 }}
+    className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300"
+  >
+    <div className={`bg-gradient-to-r ${gradient} p-4`}>
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
+          <Icon size={18} className="text-white" />
+        </div>
+        <h2 className="text-lg font-bold text-white">{title}</h2>
+      </div>
+    </div>
+    <div className="p-6">{children}</div>
+  </motion.div>
+);
+
+const Divider = () => <div className="border-t border-gray-100 my-6" />;
+
+  const SettingsPage = () => {
   const navigate = useNavigate();
+  const fileInputRef = React.useRef(null);
   const [activeTab, setActiveTab] = useState("profile");
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState({ show: false, type: "", message: "" });
@@ -1003,6 +1111,7 @@ const SettingsPage = () => {
       language: "English",
       timezone: "",
       avatarColor: "blue",
+      avatar: null,
     },
     account: {
       username: "",
@@ -1080,6 +1189,7 @@ const SettingsPage = () => {
               firstName: first || prev.profile.firstName,
               lastName: rest.join(" ") || prev.profile.lastName,
               email: storedUser.email || prev.profile.email,
+              avatar: storedUser.avatar || prev.profile.avatar,
             },
             account: {
               ...prev.account,
@@ -1108,6 +1218,7 @@ const SettingsPage = () => {
                 website: data.personal?.website || "",
                 language: data.personal?.language || "English",
                 timezone: data.personal?.timezone || "",
+                avatar: data.personal?.avatar || prev.profile.avatar,
               },
               account: { ...prev.account, ...(data.settings?.account || {}) },
               privacy: { ...prev.privacy, ...(data.settings?.privacy || {}) },
@@ -1148,6 +1259,7 @@ const SettingsPage = () => {
           language: settings.profile.language,
           timezone: settings.profile.timezone,
           name: `${settings.profile.firstName} ${settings.profile.lastName}`.trim(),
+          avatar: settings.profile.avatar,
         },
         settings: {
           account: settings.account,
@@ -1175,6 +1287,7 @@ const SettingsPage = () => {
           storedUser.firstName = settings.profile.firstName;
           storedUser.lastName = settings.profile.lastName;
           storedUser.fullName = `${settings.profile.firstName} ${settings.profile.lastName}`.trim();
+          storedUser.avatar = settings.profile.avatar;
           localStorage.setItem("user", JSON.stringify(storedUser));
           window.dispatchEvent(new Event("storage"));
         }
@@ -1194,6 +1307,21 @@ const SettingsPage = () => {
     localStorage.removeItem("user");
     navigate("/");
     window.location.reload();
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Image size must be less than 2MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        handleSettingChange("profile", "avatar", reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleDeleteAccount = async () => {
@@ -1231,112 +1359,7 @@ const SettingsPage = () => {
     { id: "notifications", label: "Alerts", icon: Bell, color: "rose", gradient: "from-rose-500 to-red-500" },
   ];
 
-  const Switch = ({ enabled, onChange, size = "md" }) => (
-    <button
-      onClick={() => onChange(!enabled)}
-      className={`relative inline-flex items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-        size === "sm" ? "h-5 w-9" : "h-6 w-11"
-      } ${enabled ? "bg-gradient-to-r from-blue-500 to-purple-500 shadow-md" : "bg-gray-200"}`}
-    >
-      <span
-        className={`inline-block transform bg-white rounded-full transition-all duration-300 shadow-md ${
-          size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4"
-        } ${enabled ? (size === "sm" ? "translate-x-5" : "translate-x-6") : "translate-x-1"}`}
-      />
-    </button>
-  );
 
-  const TabButton = ({ tab, icon: Icon, label, color, gradient, isActive }) => (
-    <motion.button
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      onClick={() => setActiveTab(tab)}
-      className={`relative flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 w-full text-left overflow-hidden ${
-        isActive
-          ? `text-white shadow-lg`
-          : "text-gray-600 hover:bg-gray-50"
-      }`}
-    >
-      {isActive && (
-        <motion.div
-          layoutId="activeTabBg"
-          className={`absolute inset-0 bg-gradient-to-r ${gradient}`}
-          initial={false}
-          transition={{ type: "spring", duration: 0.5 }}
-        />
-      )}
-      <Icon className={`relative z-10 ${isActive ? "text-white" : "text-gray-500"}`} size={18} />
-      <span className={`relative z-10 text-sm md:text-base ${isActive ? "font-semibold" : ""}`}>
-        {label}
-      </span>
-      {isActive && (
-        <motion.div
-          layoutId="activeTabIndicator"
-          className="absolute right-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full"
-        />
-      )}
-    </motion.button>
-  );
-
-  const InputField = ({ label, value, onChange, type = "text", placeholder, icon: Icon, required }) => (
-    <div className="space-y-2">
-      <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-        {Icon && <Icon size={14} className="text-gray-400" />}
-        {label}
-        {required && <span className="text-red-500 text-xs">*</span>}
-      </label>
-      <div className="relative group">
-        <input
-          type={type}
-          value={value || ""}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 group-hover:border-gray-300"
-        />
-      </div>
-    </div>
-  );
-
-  const SelectField = ({ label, value, onChange, options, icon: Icon }) => (
-    <div className="space-y-2">
-      <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-        {Icon && <Icon size={14} className="text-gray-400" />}
-        {label}
-      </label>
-      <select
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 cursor-pointer"
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-
-  const SettingCard = ({ title, icon: Icon, children, gradient }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300"
-    >
-      <div className={`bg-gradient-to-r ${gradient} p-4`}>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
-            <Icon size={18} className="text-white" />
-          </div>
-          <h2 className="text-lg font-bold text-white">{title}</h2>
-        </div>
-      </div>
-      <div className="p-6">{children}</div>
-    </motion.div>
-  );
-
-  const Divider = () => <div className="border-t border-gray-100 my-6" />;
 
   if (loading) {
     return (
@@ -1444,6 +1467,7 @@ const SettingsPage = () => {
                   color={tab.color}
                   gradient={tab.gradient}
                   isActive={activeTab === tab.id}
+                  onClick={setActiveTab}
                 />
               ))}
             </div>
@@ -1502,13 +1526,29 @@ const SettingsPage = () => {
                   <SettingCard title="Profile Information" icon={User} gradient="from-blue-500 to-cyan-500">
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6">
                       <div className="relative">
-                        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
-                          {settings.profile.firstName?.[0] || "U"}
-                          {settings.profile.lastName?.[0] || "S"}
+                        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-3xl font-bold shadow-lg overflow-hidden border-4 border-white">
+                          {settings.profile.avatar ? (
+                            <img src={settings.profile.avatar} alt="Profile" className="w-full h-full object-cover" />
+                          ) : (
+                            <>
+                              {settings.profile.firstName?.[0] || "U"}
+                              {settings.profile.lastName?.[0] || "S"}
+                            </>
+                          )}
                         </div>
-                        <button className="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all">
+                        <button 
+                          onClick={() => fileInputRef.current?.click()}
+                          className="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all"
+                        >
                           <Camera size={14} className="text-gray-600" />
                         </button>
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleImageUpload}
+                          accept="image/*"
+                          className="hidden"
+                        />
                       </div>
                       <div className="flex-1 text-center sm:text-left">
                         <h3 className="text-xl font-bold text-gray-800">

@@ -9,7 +9,7 @@ import AllCourses from './components/Courses/AllCourses';
 import CourseC1 from './components/Courses/CourseC1';
 import Syllabus from './components/Courses/SyllabusModal';
 import StudentProfile from './components/StudentProfile/StudentProfile';
-import BotVortexMyCourses from './components/StudentProfile/BotVortexMyCourses';
+import MyCoursesPage from './pages/MyCoursesPage';
 import SettingsPage from './components/StudentProfile/SettingsPage';
 import CoursesModule from './pages/CoursesModule';
 import PaymentPage from './components/indexpage/PaymentPage ';
@@ -51,8 +51,8 @@ const App = () => (<>
 
     {/* profile page */}
     <Route path="/dashboard" element={<Dashboard />} />
-    <Route path="/my-courses" element={<BotVortexMyCourses defaultTab="courses" />} />
-    <Route path="/settings" element={<BotVortexMyCourses defaultTab="settings" />} />
+    <Route path="/my-courses" element={<MyCoursesPage />} />
+    <Route path="/settings" element={<SettingsPage />} />
     {/* instructor-dashboard */}
     <Route path='/instructor-dashboard' element={<InstructorDashboard />} />
     <Route path='/instructor-my-courses' element={<InstructorDashboard defaultTab="courses" />} />

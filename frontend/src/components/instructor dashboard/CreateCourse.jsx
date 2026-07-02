@@ -1,644 +1,150 @@
-import { API_URL } from "../../config/api";
-// import React, { useState } from "react";
-// import { Link, Links, useNavigate } from "react-router-dom";
-// import { 
-//   Bot, ArrowLeft, Upload, X, Plus, Trash2,
-//   Video, FileText, Image, Settings
-// } from "lucide-react";
-
-// const CreateCourse = () => {
-//   const navigate = useNavigate();
-//   const [step, setStep] = useState(1);
-//   const [courseData, setCourseData] = useState({
-//     title: "",
-//     description: "",
-//     category: "",
-//     price: "",
-//     level: "beginner",
-//     thumbnail: null,
-//     objectives: [""],
-//     requirements: [""]
-//   });
-
-//   const handleInputChange = (e) => {
-//     const { name, value } = e.target;
-//     setCourseData(prev => ({
-//       ...prev,
-//       [name]: value
-//     }));
-//   };
-
-//   const handleArrayChange = (field, index, value) => {
-//     setCourseData(prev => ({
-//       ...prev,
-//       [field]: prev[field].map((item, i) => i === index ? value : item)
-//     }));
-//   };
-
-//   const addArrayItem = (field) => {
-//     setCourseData(prev => ({
-//       ...prev,
-//       [field]: [...prev[field], ""]
-//     }));
-//   };
-
-//   const removeArrayItem = (field, index) => {
-//     setCourseData(prev => ({
-//       ...prev,
-//       [field]: prev[field].filter((_, i) => i !== index)
-//     }));
-//   };
-
-//   const handleThumbnailUpload = (e) => {
-//     const file = e.target.files[0];
-//     if (file) {
-//       const reader = new FileReader();
-//       reader.onload = (e) => {
-//         setCourseData(prev => ({
-//           ...prev,
-//           thumbnail: e.target.result
-//         }));
-//       };
-//       reader.readAsDataURL(file);
-//     }
-//   };
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     // Here you would typically send the data to your backend
-//     console.log("Course Data:", courseData);
-//     alert("Course created successfully!");
-//     navigate("/instructor-my-courses");
-//   };
-
-//   const nextStep = () => {
-//     if (step < 3) setStep(step + 1);
-//   };
-
-//   const prevStep = () => {
-//     if (step > 1) setStep(step - 1);
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gray-50">
-//       {/* Header */}
-//       <header className="bg-white shadow-sm border-b border-gray-200">
-//         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-//           <div className="flex justify-between items-center py-4">
-//             <div className="flex items-center gap-3">
-//               <Link to="/instructor-dashboard" className="flex items-center gap-2">
-//                 <Bot className="text-purple-600 w-8 h-8" />
-//                 <span className="text-xl font-bold text-gray-900">BotVortex</span>
-//               </Link>
-//               <span className="text-gray-400">/</span>
-//               <button 
-//                 onClick={() => navigate("/instructor-my-courses")}
-//                 className="text-gray-600 hover:text-gray-900"
-//               >
-//                 My Courses
-//               </button>
-//               <span className="text-gray-400">/</span>
-//               <span className="text-gray-900 font-medium">Create Course</span>
-//             </div>
-//           </div>
-//         </div>
-//       </header>
-
-//       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-//         {/* Progress Steps */}
-//         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-//           <div className="flex items-center justify-between">
-//             {[1, 2, 3].map((stepNumber) => (
-//               <div key={stepNumber} className="flex items-center">
-//                 <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-//                   step >= stepNumber 
-//                     ? "bg-blue-600 text-white" 
-//                     : "bg-gray-200 text-gray-600"
-//                 }`}>
-//                   {stepNumber}
-//                 </div>
-//                 <span className={`ml-2 text-sm font-medium ${
-//                   step >= stepNumber ? "text-blue-600" : "text-gray-500"
-//                 }`}>
-//                   {stepNumber === 1 && "Basic Info"}
-//                   {stepNumber === 2 && "Curriculum"}
-//                   {stepNumber === 3 && "Pricing"}
-//                 </span>
-//                 {stepNumber < 3 && (
-//                   <div className={`w-16 h-0.5 mx-4 ${
-//                     step > stepNumber ? "bg-blue-600" : "bg-gray-200"
-//                   }`} />
-//                 )}
-//               </div>
-//             ))}
-//           </div>
-//         </div>
-
-//         <form onSubmit={handleSubmit}>
-//           {/* Step 1: Basic Information */}
-//           {step === 1 && (
-//             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-//               <h2 className="text-2xl font-bold text-gray-900 mb-6">Course Information</h2>
-
-//               <div className="space-y-6">
-//                 {/* Course Title */}
-//                 <div>
-//                   <label className="block text-sm font-medium text-gray-700 mb-2">
-//                     Course Title *
-//                   </label>
-//                   <input
-//                     type="text"
-//                     name="title"
-//                     value={courseData.title}
-//                     onChange={handleInputChange}
-//                     placeholder="e.g., Advanced React Development"
-//                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-//                     required
-//                   />
-//                 </div>
-
-//                 {/* Course Description */}
-//                 <div>
-//                   <label className="block text-sm font-medium text-gray-700 mb-2">
-//                     Course Description *
-//                   </label>
-//                   <textarea
-//                     name="description"
-//                     value={courseData.description}
-//                     onChange={handleInputChange}
-//                     rows="4"
-//                     placeholder="Describe what students will learn in this course..."
-//                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-//                     required
-//                   />
-//                 </div>
-
-//                 {/* Category and Level */}
-//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//                   <div>
-//                     <label className="block text-sm font-medium text-gray-700 mb-2">
-//                       Category *
-//                     </label>
-//                     <select
-//                       name="category"
-//                       value={courseData.category}
-//                       onChange={handleInputChange}
-//                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-//                       required
-//                     >
-//                       <option value="">Select Category</option>
-//                       <option value="web-development">Web Development</option>
-//                       <option value="mobile-development">Mobile Development</option>
-//                       <option value="data-science">Data Science</option>
-//                       <option value="design">Design</option>
-//                       <option value="business">Business</option>
-//                       <option value="marketing">Marketing</option>
-//                     </select>
-//                   </div>
-
-//                   <div>
-//                     <label className="block text-sm font-medium text-gray-700 mb-2">
-//                       Difficulty Level *
-//                     </label>
-//                     <select
-//                       name="level"
-//                       value={courseData.level}
-//                       onChange={handleInputChange}
-//                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-//                     >
-//                       <option value="beginner">Beginner</option>
-//                       <option value="intermediate">Intermediate</option>
-//                       <option value="advanced">Advanced</option>
-//                     </select>
-//                   </div>
-//                 </div>
-
-//                 {/* Course Thumbnail */}
-//                 <div>
-//                   <label className="block text-sm font-medium text-gray-700 mb-2">
-//                     Course Thumbnail
-//                   </label>
-//                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-//                     {courseData.thumbnail ? (
-//                       <div className="relative inline-block">
-//                         <img
-//                           src={courseData.thumbnail}
-//                           alt="Course thumbnail"
-//                           className="w-48 h-32 object-cover rounded-lg"
-//                         />
-//                         <button
-//                           type="button"
-//                           onClick={() => setCourseData(prev => ({ ...prev, thumbnail: null }))}
-//                           className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
-//                         >
-//                           <X className="w-4 h-4" />
-//                         </button>
-//                       </div>
-//                     ) : (
-//                       <>
-//                         <Image className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-//                         <p className="text-sm text-gray-600 mb-2">
-//                           Drag and drop an image, or click to browse
-//                         </p>
-//                         <input
-//                           type="file"
-//                           accept="image/*"
-//                           onChange={handleThumbnailUpload}
-//                           className="hidden"
-//                           id="thumbnail-upload"
-//                         />
-//                         <label
-//                           htmlFor="thumbnail-upload"
-//                           className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
-//                         >
-//                           <Upload className="w-4 h-4" />
-//                           Choose Image
-//                         </label>
-//                       </>
-//                     )}
-//                   </div>
-//                 </div>
-
-//                 {/* Learning Objectives */}
-//                 <div>
-//                   <label className="block text-sm font-medium text-gray-700 mb-2">
-//                     What will students learn?
-//                   </label>
-//                   <div className="space-y-2">
-//                     {courseData.objectives.map((objective, index) => (
-//                       <div key={index} className="flex gap-2">
-//                         <input
-//                           type="text"
-//                           value={objective}
-//                           onChange={(e) => handleArrayChange('objectives', index, e.target.value)}
-//                           placeholder="e.g., Build real-world applications"
-//                           className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-//                         />
-//                         {courseData.objectives.length > 1 && (
-//                           <button
-//                             type="button"
-//                             onClick={() => removeArrayItem('objectives', index)}
-//                             className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-//                           >
-//                             <Trash2 className="w-4 h-4" />
-//                           </button>
-//                         )}
-//                       </div>
-//                     ))}
-//                     <button
-//                       type="button"
-//                       onClick={() => addArrayItem('objectives')}
-//                       className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm"
-//                     >
-//                       <Plus className="w-4 h-4" />
-//                       Add Learning Objective
-//                     </button>
-//                   </div>
-//                 </div>
-
-//                 {/* Requirements */}
-//                 <div>
-//                   <label className="block text-sm font-medium text-gray-700 mb-2">
-//                     Requirements
-//                   </label>
-//                   <div className="space-y-2">
-//                     {courseData.requirements.map((requirement, index) => (
-//                       <div key={index} className="flex gap-2">
-//                         <input
-//                           type="text"
-//                           value={requirement}
-//                           onChange={(e) => handleArrayChange('requirements', index, e.target.value)}
-//                           placeholder="e.g., Basic programming knowledge"
-//                           className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-//                         />
-//                         {courseData.requirements.length > 1 && (
-//                           <button
-//                             type="button"
-//                             onClick={() => removeArrayItem('requirements', index)}
-//                             className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-//                           >
-//                             <Trash2 className="w-4 h-4" />
-//                           </button>
-//                         )}
-//                       </div>
-//                     ))}
-//                     <button
-//                       type="button"
-//                       onClick={() => addArrayItem('requirements')}
-//                       className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm"
-//                     >
-//                       <Plus className="w-4 h-4" />
-//                       Add Requirement
-//                     </button>
-//                   </div>
-//                 </div>
-//               </div>
-
-//               <div className="flex justify-end pt-6">
-//                 <button
-//                   type="button"
-//                   onClick={nextStep}
-//                   className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-//                 >
-//                   Continue to Curriculum
-//                 </button>
-//               </div>
-//             </div>
-//           )}
-
-//           {/* Step 2: Curriculum */}
-//           {step === 2 && (
-//             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-//               <h2 className="text-2xl font-bold text-gray-900 mb-6">Course Curriculum</h2>
-
-//               <div className="space-y-6">
-//                 <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
-//                   <Video className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-//                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-//                     Start building your course
-//                   </h3>
-//                   <p className="text-gray-600 mb-6">
-//                     Add sections and lectures to create your course curriculum
-//                   </p>
-//                   <button
-//                     type="button"
-//                     className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-//                   >
-//                     Create Your First Lecture
-//                   </button>
-//                 </div>
-
-//                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-//                   <p className="text-yellow-800 text-sm">
-//                     <strong>Note:</strong> You can add lectures and sections after creating the course.
-//                     For now, focus on setting up the basic course structure.
-//                   </p>
-//                 </div>
-//               </div>
-
-//               <div className="flex justify-between pt-6">
-//                 <button
-//                   type="button"
-//                   onClick={prevStep}
-//                   className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-//                 >
-//                   <ArrowLeft className="w-4 h-4" />
-//                   Back to Basic Info
-//                 </button>
-//                 <button
-//                   type="button"
-//                   onClick={nextStep}
-//                   className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-//                 >
-//                   Continue to Pricing
-//                 </button>
-//               </div>
-//             </div>
-//           )}
-
-//           {/* Step 3: Pricing */}
-//           {step === 3 && (
-//             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-//               <h2 className="text-2xl font-bold text-gray-900 mb-6">Pricing</h2>
-
-//               <div className="space-y-6">
-//                 <div>
-//                   <label className="block text-sm font-medium text-gray-700 mb-2">
-//                     Course Price (USD) *
-//                   </label>
-//                   <div className="relative">
-//                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-//                     <input
-//                       type="number"
-//                       name="price"
-//                       value={courseData.price}
-//                       onChange={handleInputChange}
-//                       placeholder="0.00"
-//                       min="0"
-//                       step="0.01"
-//                       className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-//                       required
-//                     />
-//                   </div>
-//                   <p className="text-sm text-gray-600 mt-2">
-//                     Set the price for your course. You can offer discounts and promotions later.
-//                   </p>
-//                 </div>
-
-//                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-//                   <h4 className="font-semibold text-blue-900 mb-2">Pricing Information</h4>
-//                   <ul className="text-blue-800 text-sm space-y-1">
-//                     <li>• Platform fee: 30% of course price</li>
-//                     <li>• You earn: 70% of course price</li>
-//                     <li>• Payments are processed monthly</li>
-//                     <li>• Minimum payout: $50</li>
-//                   </ul>
-//                 </div>
-//               </div>
-
-//               <div className="flex justify-between pt-6">
-//                 <button
-//                   type="button"
-//                   onClick={prevStep}
-//                   className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-//                 >
-//                   <ArrowLeft className="w-4 h-4" />
-//                   Back to Curriculum
-//                 </button>
-//                 <Link to={'/create-course'}
-//                   type="submit"
-//                   className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
-//                 >
-//                   Create Course
-//                 </Link>
-//               </div>
-//             </div>
-//           )}
-//         </form>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default CreateCourse;
-
 import React, { useState } from "react";
-import { Link, Links, useNavigate } from "react-router-dom";
-import {
-
-  Bot, ArrowLeft, Upload, X, Plus, Trash2,
-  Video, FileText, Image, Settings, DollarSign, Coins
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Plus, Upload, Settings, BookOpen, Video, Target, Sparkles, 
+  Trash2, X, AlertCircle, Save, Send, ChevronRight, Edit3, Users, Star
 } from "lucide-react";
+import { API_URL } from "../../config/api";
 
-const CreateCourse = () => {
-  const navigate = useNavigate();
-  const [step, setStep] = useState(1);
-
-  // Combined state for all forms
+const CreateCourse = ({ instructor }) => {
+  const [viewMode, setViewMode] = useState("list"); // "list" or "create"
+  const [activeStep, setActiveStep] = useState(1);
   const [courseData, setCourseData] = useState({
-    // Form 1 Data
     title: "",
-    description: "",
-    duration: "",
-    overview: "",
-    learningObjectives: "",
-    outcome: "",
-    tools: "",
-    languages: "",
-    prerequisites: "",
-    banner: null,
-    syllabus: null,
-
-    // Form 2 Data
-    modules: [{
-      name: "",
-      description: "",
-      lessonFile: null,
-      quizzes: [{ question: "", answer: "" }]
-    }],
-
-    // Form 3 Data
-    lessons: [{
-      title: "",
-      videoFile: null
-    }],
-
-    // Pricing Data
-    price: "",
-    priceInCoins: 0,
     category: "",
-    level: "beginner"
+    description: "",
+    objectives: ["", ""],
+    price: "",
+    discount: "",
+    modules: [{ id: 1, title: "", url: "", notes: "", pdf: "", quizzes: [] }],
+    finalTask: { title: "", description: "" },
+    thumbnail: null,
+    id: null
   });
 
-  // Coin conversion rate
-  const COIN_RATE = 100; // 1 USD = 100 coins
+  const handleEditCourse = (course, step = 1) => {
+    setCourseData({
+      title: course.title || "",
+      category: "Robotics", // Dummy default for now if no category exists
+      description: course.description || "",
+      objectives: course.learnings && course.learnings.length > 0 ? course.learnings : [""],
+      price: course.coins?.toString() || "0",
+      discount: "0",
+      modules: course.modules && course.modules.length > 0 ? course.modules.map(m => ({
+        ...m,
+        id: m._id || m.id || Date.now(),
+        notes: m.description || m.notes || "",
+        url: m.url || "",
+        pdf: m.pdf || ""
+      })) : [{ id: Date.now(), title: "", url: "", notes: "", pdf: "", quizzes: [] }],
+      finalTask: course.finalTask || { title: "", description: "" },
+      thumbnail: course.image,
+      id: course.id || course._id
+    });
+    setActiveStep(step);
+    setViewMode("create");
+  };
 
-  // Handle basic input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setCourseData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-
-    // Auto-calculate coins when price changes
-    if (name === "price") {
-      setCourseData(prev => ({
-        ...prev,
-        priceInCoins: Math.round(value * COIN_RATE)
-      }));
-    }
+    setCourseData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Handle file uploads
-  const handleFileUpload = (field, file) => {
-    setCourseData(prev => ({
-      ...prev,
-      [field]: file
-    }));
+  const handleObjectiveChange = (index, value) => {
+    const newObjectives = [...courseData.objectives];
+    newObjectives[index] = value;
+    setCourseData(prev => ({ ...prev, objectives: newObjectives }));
   };
 
-  // Module management
+  const handleModuleChange = (idx, field, value) => {
+    const updated = [...courseData.modules];
+    updated[idx][field] = value;
+    setCourseData(prev => ({...prev, modules: updated}));
+  };
+
   const addModule = () => {
     setCourseData(prev => ({
       ...prev,
-      modules: [...prev.modules, {
-        name: "",
-        description: "",
-        lessonFile: null,
-        quizzes: [{ question: "", answer: "" }]
-      }]
+      modules: [...prev.modules, { id: Date.now(), title: "", url: "", notes: "", pdf: "", quizzes: [] }]
     }));
   };
 
-  const updateModule = (index, field, value) => {
-    const updatedModules = [...courseData.modules];
-    updatedModules[index][field] = value;
-    setCourseData(prev => ({ ...prev, modules: updatedModules }));
-  };
-
-  const removeModule = (index) => {
-    setCourseData(prev => ({
-      ...prev,
-      modules: prev.modules.filter((_, i) => i !== index)
-    }));
-  };
-
-  // Quiz management within modules
-  const addQuiz = (moduleIndex) => {
-    const updatedModules = [...courseData.modules];
-    updatedModules[moduleIndex].quizzes.push({ question: "", answer: "" });
-    setCourseData(prev => ({ ...prev, modules: updatedModules }));
-  };
-
-  const updateQuiz = (moduleIndex, quizIndex, field, value) => {
-    const updatedModules = [...courseData.modules];
-    updatedModules[moduleIndex].quizzes[quizIndex][field] = value;
-    setCourseData(prev => ({ ...prev, modules: updatedModules }));
-  };
-
-  const removeQuiz = (moduleIndex, quizIndex) => {
-    const updatedModules = [...courseData.modules];
-    updatedModules[moduleIndex].quizzes = updatedModules[moduleIndex].quizzes.filter((_, i) => i !== quizIndex);
-    setCourseData(prev => ({ ...prev, modules: updatedModules }));
-  };
-
-  // Lesson management
-  const addLesson = () => {
-    setCourseData(prev => ({
-      ...prev,
-      lessons: [...prev.lessons, { title: "", videoFile: null }]
-    }));
-  };
-
-  const updateLesson = (index, field, value) => {
-    const updatedLessons = [...courseData.lessons];
-    updatedLessons[index][field] = value;
-    setCourseData(prev => ({ ...prev, lessons: updatedLessons }));
-  };
-
-  const removeLesson = (index) => {
-    setCourseData(prev => ({
-      ...prev,
-      lessons: prev.lessons.filter((_, i) => i !== index)
-    }));
-  };
-
-  // Navigation
-  const nextStep = () => {
-    if (step < 4) setStep(step + 1);
-  };
-
-  const prevStep = () => {
-    if (step > 1) setStep(step - 1);
-  };
-
-  const [loading, setLoading] = useState(false);
-
-  // Form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const token = localStorage.getItem("instructor_token");
-    if (!token) {
-      alert("Please login again");
-      navigate("/login");
+  const addQuiz = (moduleIdx) => {
+    const updated = [...courseData.modules];
+    if (updated[moduleIdx].quizzes.length >= 10) {
+      alert("Maximum 10 quizzes allowed per module.");
       return;
     }
+    updated[moduleIdx].quizzes.push({ id: Date.now(), question: "", options: ["", "", "", ""], answer: 0 });
+    setCourseData(prev => ({...prev, modules: updated}));
+  };
 
+  const handleQuizChange = (moduleIdx, quizIdx, field, value) => {
+    const updated = [...courseData.modules];
+    updated[moduleIdx].quizzes[quizIdx][field] = value;
+    setCourseData(prev => ({...prev, modules: updated}));
+  };
+
+  const handleQuizOptionChange = (moduleIdx, quizIdx, optionIdx, value) => {
+    const updated = [...courseData.modules];
+    updated[moduleIdx].quizzes[quizIdx].options[optionIdx] = value;
+    setCourseData(prev => ({...prev, modules: updated}));
+  };
+
+  const removeQuiz = (moduleIdx, quizIdx) => {
+    const updated = [...courseData.modules];
+    updated[moduleIdx].quizzes = updated[moduleIdx].quizzes.filter((_, i) => i !== quizIdx);
+    setCourseData(prev => ({...prev, modules: updated}));
+  };
+
+  const resetForm = () => {
+    setCourseData({
+      title: "", category: "", description: "", objectives: ["", ""],
+      price: "", discount: "", modules: [{ id: 1, title: "", url: "", notes: "", pdf: "", quizzes: [] }], finalTask: { title: "", description: "" }, thumbnail: null, id: null
+    });
+    setActiveStep(1);
+  };
+
+  const handleCreateNew = () => {
+    resetForm();
+    setViewMode("create");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("Saving Course Data to Database:", courseData);
+    
     try {
+      const token = localStorage.getItem("instructorToken") || localStorage.getItem("token");
+      
       const payload = {
         title: courseData.title,
         description: courseData.description,
-        level: courseData.level,
-        price: courseData.priceInCoins,
-        image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=250&fit=crop", // placeholder or handle upload
-        learnings: courseData.learningObjectives ? courseData.learningObjectives.split("\n") : []
+        level: courseData.category === "Robotics" ? "beginner" : "intermediate",
+        coins: parseInt(courseData.price) || 0,
+        learnings: courseData.objectives.filter(obj => obj.trim() !== ""),
+        finalTask: courseData.finalTask,
+        modules: courseData.modules.map((m, index) => ({
+          _id: m._id,
+          title: m.title || `Module ${index + 1}`,
+          type: m.type || (m.pdf ? 'pdf' : 'video'),
+          url: m.url || m.pdf || '#', // required by backend schema
+          description: m.notes || m.description || '',
+          order: m.order || index + 1
+        })),
+        duration: "4 Weeks", // static for now
+        lectures: `${courseData.modules.length} Lectures`,
+        projects: 1
       };
 
-      const response = await fetch(`${API_URL}/instructor/courses`, {
-        method: "POST",
+      const url = courseData.id 
+        ? `${API_URL}/instructor/courses/${courseData.id}` 
+        : `${API_URL}/instructor/courses`;
+        
+      const method = courseData.id ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
@@ -647,615 +153,458 @@ const CreateCourse = () => {
       });
 
       if (response.ok) {
-        alert("Course created successfully!");
-        navigate("/instructor-my-courses");
+        alert("Course saved successfully! It is now live.");
+        setViewMode("list");
+        // We should really re-fetch the list here, let's force a reload for simplicity
+        window.location.reload();
       } else {
-        const error = await response.json();
-        alert(`Error: ${error.message}`);
+        const errData = await response.json();
+        alert("Error saving course: " + (errData.message || "Unknown error"));
       }
     } catch (err) {
-      console.error("Error creating course:", err);
-      alert("Failed to create course. Please try again.");
-    } finally {
-      setLoading(false);
+      console.error(err);
+      alert("Failed to save course. Check console for details.");
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center gap-3">
-              <Link to="/instructor-dashboard" className="flex items-center gap-2">
-                <Bot className="text-purple-600 w-8 h-8" />
-                <span className="text-xl font-bold text-gray-900">BotVortex</span>
-              </Link>
-              <span className="text-gray-400">/</span>
-              <button
-                onClick={() => navigate("/instructor-my-courses")}
-                className="text-gray-600 hover:text-gray-900"
-              >
-                My Courses
-              </button>
-              <span className="text-gray-400">/</span>
-              <span className="text-gray-900 font-medium">Create Course</span>
-            </div>
-          </div>
-        </div>
-      </header>
+  const [existingCourses, setExistingCourses] = useState([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Progress Steps */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-          <div className="flex items-center justify-between">
-            {[1, 2, 3, 4].map((stepNumber) => (
-              <div key={stepNumber} className="flex items-center">
-                <div className={`flex items-center justify-center w-8 h-8 rounded-full ${step >= stepNumber
-                  ? "bg-purple-600 text-white"
-                  : "bg-gray-200 text-gray-600"
-                  }`}>
-                  {stepNumber}
-                </div>
-                <span className={`ml-2 text-sm font-medium ${step >= stepNumber ? "text-purple-600" : "text-gray-500"
-                  }`}>
-                  {stepNumber === 1 && "Basic Info"}
-                  {stepNumber === 2 && "Curriculum"}
-                  {stepNumber === 3 && "Content"}
-                  {stepNumber === 4 && "Pricing"}
+  React.useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const token = localStorage.getItem("instructorToken") || localStorage.getItem("token");
+        const res = await fetch(`${API_URL}/instructor/courses`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          // Map MongoDB courses to UI format but KEEP all backend data
+          const mappedCourses = data.map(course => ({
+            ...course,
+            id: course._id,
+            title: course.title,
+            level: course.level ? course.level.charAt(0).toUpperCase() + course.level.slice(1) : "Beginner",
+            students: course.students || 0,
+            rating: course.rating || 4.5,
+            coins: course.coins || 0,
+            status: "Published",
+            image: course.image || "https://images.unsplash.com/photo-1581094794329-c8112a89af12"
+          }));
+          setExistingCourses(mappedCourses);
+        }
+      } catch (err) {
+        console.error("Failed to fetch instructor courses:", err);
+      } finally {
+        setLoadingCourses(false);
+      }
+    };
+    fetchCourses();
+  }, []);
+
+  if (viewMode === "list") {
+    return (
+      <div className="space-y-8 pb-10">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-[#0A192F]/60 backdrop-blur-md rounded-3xl p-8 border border-white/5 shadow-xl">
+          <div>
+            <h2 className="text-3xl font-black text-white flex items-center gap-3">
+              <BookOpen className="text-[#00E5FF] w-8 h-8" />
+              Handling Courses
+            </h2>
+            <p className="text-slate-400 mt-2">Manage your existing courses or create a new one.</p>
+          </div>
+          <button 
+            onClick={handleCreateNew}
+            className="px-6 py-3 bg-gradient-to-r from-[#00E5FF] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#00E5FF] text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(124,58,237,0.4)] flex items-center gap-2"
+          >
+            <Plus size={18} /> Create New Course
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {loadingCourses ? (
+            <div className="col-span-3 text-center text-slate-400 py-10">Loading your courses...</div>
+          ) : existingCourses.length === 0 ? (
+            <div className="col-span-3 text-center text-slate-400 py-10">No courses found. Create one!</div>
+          ) : (
+            existingCourses.map(course => (
+            <motion.div key={course.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-[#0A192F]/60 backdrop-blur-md rounded-3xl overflow-hidden border border-white/5 hover:border-[#00E5FF]/30 transition-all group">
+              <div className="h-40 overflow-hidden relative">
+                <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A192F] to-transparent"></div>
+                <span className="absolute bottom-3 left-3 px-3 py-1 bg-white/10 backdrop-blur-md rounded-lg text-xs font-bold text-white border border-white/10">
+                  {course.level}
                 </span>
-                {stepNumber < 4 && (
-                  <div className={`w-16 h-0.5 mx-4 ${step > stepNumber ? "bg-purple-600" : "bg-gray-200"
-                    }`} />
-                )}
+                <span className="absolute top-3 right-3 px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs font-bold border border-emerald-500/30">
+                  {course.status}
+                </span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmit}>
-          {/* Step 1: Basic Information (Form 1) */}
-          {step === 1 && (
-            <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-1 rounded-2xl shadow-2xl">
-              <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 text-white">
-                <h1 className="text-3xl font-bold mb-6 text-center drop-shadow-lg">
-                  🚀 Add New Course – Basic Information
-                </h1>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Course Name */}
-                  <div className="md:col-span-2">
-                    <label className="block mb-1 font-semibold">Course Name</label>
-                    <input
-                      type="text"
-                      name="title"
-                      value={courseData.title}
-                      onChange={handleInputChange}
-                      className="w-full p-3 rounded-xl bg-white/20 text-white placeholder-white/70 outline-none"
-                      placeholder="Enter course name"
-                    />
+              <div className="p-6">
+                <h3 className="text-lg font-bold text-white mb-4 line-clamp-1">{course.title}</h3>
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex items-center gap-2 text-sm text-slate-400">
+                    <Users size={16} /> <span className="font-bold text-white">{course.students}</span>
                   </div>
-
-                  {/* Description */}
-                  <div className="md:col-span-2">
-                    <label className="block mb-1 font-semibold">Course Description</label>
-                    <textarea
-                      rows="3"
-                      name="description"
-                      value={courseData.description}
-                      onChange={handleInputChange}
-                      className="w-full p-3 rounded-xl bg-white/20 text-white placeholder-white/70 outline-none"
-                      placeholder="Enter course description"
-                    ></textarea>
+                  <div className="flex items-center gap-1 text-sm text-yellow-400">
+                    <Star size={16} className="fill-yellow-400" /> <span className="font-bold">{course.rating}</span>
                   </div>
-
-                  {/* Duration */}
-                  <div>
-                    <label className="block mb-1 font-semibold">Course Duration</label>
-                    <input
-                      type="text"
-                      name="duration"
-                      value={courseData.duration}
-                      onChange={handleInputChange}
-                      className="w-full p-3 rounded-xl bg-white/20 text-white placeholder-white/70 outline-none"
-                      placeholder="Eg: 3 Months, 40 Hours"
-                    />
-                  </div>
-
-                  {/* Category */}
-                  <div>
-                    <label className="block mb-1 font-semibold">Category</label>
-                    <select
-                      name="category"
-                      value={courseData.category}
-                      onChange={handleInputChange}
-                      className="w-full p-3 rounded-xl bg-white/20 text-white placeholder-white/70 outline-none"
-                    >
-                      <option value="">Select Category</option>
-                      <option value="programming">Programming</option>
-                      <option value="design">Design</option>
-                      <option value="business">Business</option>
-                      <option value="marketing">Marketing</option>
-                    </select>
-                  </div>
-
-                  {/* Overview */}
-                  <div className="md:col-span-2">
-                    <label className="block mb-1 font-semibold">Overview</label>
-                    <textarea
-                      rows="2"
-                      name="overview"
-                      value={courseData.overview}
-                      onChange={handleInputChange}
-                      className="w-full p-3 rounded-xl bg-white/20 text-white placeholder-white/70 outline-none"
-                      placeholder="Overview content"
-                    ></textarea>
-                  </div>
-
-                  {/* Learning Objectives */}
-                  <div className="md:col-span-2">
-                    <label className="block mb-1 font-semibold">Learning Objectives</label>
-                    <textarea
-                      rows="3"
-                      name="learningObjectives"
-                      value={courseData.learningObjectives}
-                      onChange={handleInputChange}
-                      className="w-full p-3 rounded-xl bg-white/20 text-white placeholder-white/70 outline-none"
-                      placeholder="What students will learn"
-                    ></textarea>
-                  </div>
-
-                  {/* Outcome */}
-                  <div className="md:col-span-2">
-                    <label className="block mb-1 font-semibold">Outcome</label>
-                    <textarea
-                      rows="2"
-                      name="outcome"
-                      value={courseData.outcome}
-                      onChange={handleInputChange}
-                      className="w-full p-3 rounded-xl bg-white/20 text-white placeholder-white/70 outline-none"
-                      placeholder="Expected outcomes"
-                    ></textarea>
-                  </div>
-
-                  {/* Tools */}
-                  <div>
-                    <label className="block mb-1 font-semibold">Tools Required</label>
-                    <input
-                      type="text"
-                      name="tools"
-                      value={courseData.tools}
-                      onChange={handleInputChange}
-                      className="w-full p-3 rounded-xl bg-white/20 text-white placeholder-white/70 outline-none"
-                      placeholder="Eg: VS Code, Arduino IDE"
-                    />
-                  </div>
-
-                  {/* Languages */}
-                  <div>
-                    <label className="block mb-1 font-semibold">Languages Used</label>
-                    <input
-                      type="text"
-                      name="languages"
-                      value={courseData.languages}
-                      onChange={handleInputChange}
-                      className="w-full p-3 rounded-xl bg-white/20 text-white placeholder-white/70 outline-none"
-                      placeholder="Eg: C++, Python, JavaScript"
-                    />
-                  </div>
-
-                  {/* Pre-Requests */}
-                  <div className="md:col-span-2">
-                    <label className="block mb-1 font-semibold">Pre-Requests</label>
-                    <input
-                      type="text"
-                      name="prerequisites"
-                      value={courseData.prerequisites}
-                      onChange={handleInputChange}
-                      className="w-full p-3 rounded-xl bg-white/20 text-white placeholder-white/70 outline-none"
-                      placeholder="Eg: Basic programming knowledge"
-                    />
-                  </div>
-
-                  {/* Banner Upload */}
-                  <div className="md:col-span-2">
-                    <label className="block mb-1 font-semibold">Banner Image</label>
-                    <div className="border-2 border-dashed border-white/50 p-4 rounded-xl cursor-pointer text-center hover:bg-white/10 transition">
-                      <input
-                        type="file"
-                        className="hidden"
-                        onChange={(e) => handleFileUpload("banner", e.target.files[0])}
-                        id="bannerUpload"
-                      />
-                      <label htmlFor="bannerUpload" className="cursor-pointer">
-                        {courseData.banner ? courseData.banner.name : "Click to upload banner"}
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Syllabus Upload */}
-                  <div className="md:col-span-2">
-                    <label className="block mb-1 font-semibold">Syllabus (PDF/Word)</label>
-                    <div className="border-2 border-dashed border-white/50 p-4 rounded-xl cursor-pointer text-center hover:bg-white/10 transition">
-                      <input
-                        type="file"
-                        accept=".pdf,.doc,.docx"
-                        className="hidden"
-                        onChange={(e) => handleFileUpload("syllabus", e.target.files[0])}
-                        id="syllabusUpload"
-                      />
-                      <label htmlFor="syllabusUpload" className="cursor-pointer">
-                        {courseData.syllabus ? courseData.syllabus.name : "Upload syllabus file"}
-                      </label>
-                    </div>
+                  <div className="flex items-center gap-1 text-sm text-amber-500">
+                    <span className="font-bold">₹{course.coins}</span>
                   </div>
                 </div>
-
-                <div className="flex justify-end pt-6">
-                  <button
-                    type="button"
-                    onClick={nextStep}
-                    className="bg-white text-purple-700 px-6 py-3 rounded-xl font-bold hover:bg-white/90 transition"
-                  >
-                    Continue to Curriculum
+                <div className="flex gap-2">
+                  <button onClick={() => handleEditCourse(course, 1)} className="flex-1 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2">
+                    <Edit3 size={16} /> Edit
+                  </button>
+                  <button onClick={() => handleEditCourse(course, 2)} className="flex-1 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2">
+                    <Video size={16} /> Content
                   </button>
                 </div>
               </div>
-            </div>
+            </motion.div>
+            ))
           )}
+        </div>
+      </div>
+    );
+  }
 
-          {/* Step 2: Curriculum (Form 2) */}
-          {step === 2 && (
-            <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-1 rounded-2xl shadow-2xl">
-              <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 text-white">
-                <h1 className="text-3xl font-bold mb-6 text-center drop-shadow-lg">
-                  ⚙️ Module Creator – Curriculum
-                </h1>
+  return (
+    <div className="space-y-8 pb-10">
+      
+      {/* Header */}
+      <div className="bg-[#0A192F]/60 backdrop-blur-md rounded-3xl p-8 border border-[#00E5FF]/30 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+          <h2 className="text-3xl font-black text-white flex items-center gap-3">
+            <Sparkles className="text-[#00E5FF] w-8 h-8" />
+            {courseData.title ? `Editing: ${courseData.title}` : 'Course Builder'}
+          </h2>
+          <p className="text-slate-400 mt-2">Design, upload, and publish premium courses.</p>
+        </div>
+        <div className="flex gap-4">
+          <button onClick={() => setViewMode("list")} className="px-6 py-3 bg-white/5 border border-white/10 hover:bg-white/10 text-white font-bold rounded-xl transition-all shadow-lg flex items-center gap-2">
+            <X size={18} /> Cancel
+          </button>
+          <button 
+            onClick={handleSubmit}
+            className="px-6 py-3 bg-gradient-to-r from-[#00E5FF] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#00E5FF] text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(124,58,237,0.4)] flex items-center gap-2"
+          >
+            <Send size={18} /> Publish Course
+          </button>
+        </div>
+      </div>
 
-                {/* Modules */}
-                {courseData.modules.map((module, moduleIndex) => (
-                  <div key={moduleIndex} className="mb-6 p-4 bg-white/10 rounded-xl">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-xl font-bold">Module {moduleIndex + 1}</h3>
-                      {courseData.modules.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeModule(moduleIndex)}
-                          className="text-red-300 hover:text-red-100"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      )}
+      {/* Stepper */}
+      <div className="flex justify-center mb-8">
+        <div className="flex items-center gap-4 bg-[#0A192F]/80 p-3 rounded-full border border-white/5">
+          <button onClick={() => setActiveStep(1)} className={`px-6 py-2 rounded-full font-bold text-sm transition-all ${activeStep === 1 ? 'bg-[#7C3AED] text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}>
+            1. Basic Info
+          </button>
+          <button onClick={() => setActiveStep(2)} className={`px-6 py-2 rounded-full font-bold text-sm transition-all ${activeStep === 2 ? 'bg-[#7C3AED] text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}>
+            2. Curriculum & Videos
+          </button>
+          <button onClick={() => setActiveStep(3)} className={`px-6 py-2 rounded-full font-bold text-sm transition-all ${activeStep === 3 ? 'bg-[#7C3AED] text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}>
+            3. Pricing & Publish
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-[#0A192F]/60 backdrop-blur-md rounded-3xl p-8 border border-white/5 shadow-xl">
+        
+        {/* Step 1: Basic Info */}
+        {activeStep === 1 && (
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+            <h3 className="text-xl font-bold text-white mb-6 border-b border-white/10 pb-4">Course Details</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Course Title</label>
+                <input 
+                  type="text" name="title" value={courseData.title || ""} onChange={handleInputChange}
+                  placeholder="e.g. Advanced AI Robotics"
+                  className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00E5FF] transition-colors"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Category</label>
+                <select 
+                  name="category" value={courseData.category || ""} onChange={handleInputChange}
+                  className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00E5FF] transition-colors appearance-none"
+                >
+                  <option value="">Select Category</option>
+                  <option value="Robotics">Robotics</option>
+                  <option value="AI">Artificial Intelligence</option>
+                  <option value="IoT">IoT Systems</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Course Description</label>
+              <textarea 
+                name="description" value={courseData.description || ""} onChange={handleInputChange} rows="4"
+                placeholder="What will students learn in this course?"
+                className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00E5FF] transition-colors resize-none"
+              ></textarea>
+            </div>
+
+            <div className="space-y-4">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Learning Objectives</label>
+              {courseData.objectives.map((obj, idx) => (
+                <div key={idx} className="flex items-center gap-3">
+                  <div className="p-3 bg-[#00E5FF]/10 text-[#00E5FF] rounded-lg"><Target size={20} /></div>
+                  <input 
+                    type="text" value={obj || ""} onChange={(e) => handleObjectiveChange(idx, e.target.value)}
+                    placeholder="e.g. Build a functional autonomous robot"
+                    className="flex-1 bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00E5FF] transition-colors"
+                  />
+                  <button 
+                    onClick={() => setCourseData(prev => ({...prev, objectives: prev.objectives.filter((_, i) => i !== idx)}))}
+                    className="p-3 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-xl transition-colors"
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                </div>
+              ))}
+              <button 
+                onClick={() => setCourseData(prev => ({...prev, objectives: [...prev.objectives, ""]}))}
+                className="text-[#00E5FF] text-sm font-bold flex items-center gap-2 hover:underline"
+              >
+                <Plus size={16} /> Add another objective
+              </button>
+            </div>
+            
+            <div className="flex justify-end pt-6 border-t border-white/10 mt-8">
+              <button onClick={() => setActiveStep(2)} className="px-6 py-3 bg-[#7C3AED] text-white rounded-xl font-bold flex items-center gap-2">
+                Continue to Curriculum <ChevronRight size={18} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Step 2: Curriculum */}
+        {activeStep === 2 && (
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+            <h3 className="text-xl font-bold text-white mb-6 border-b border-white/10 pb-4">Curriculum & Video Uploads</h3>
+            
+            <div className="space-y-6">
+              {courseData.modules.map((mod, idx) => (
+                <div key={mod.id} className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-lg">
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="font-bold text-white flex items-center gap-2">
+                      <div className="w-6 h-6 bg-[#7C3AED] rounded-full flex items-center justify-center text-xs">{idx + 1}</div>
+                      Module Setup
+                    </h4>
+                    <button 
+                      onClick={() => setCourseData(prev => ({...prev, modules: prev.modules.filter((_, i) => i !== idx)}))}
+                      className="text-slate-400 hover:text-red-400 transition-colors"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-4 mb-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Module Title</label>
+                      <input 
+                        type="text" value={mod.title || ""} onChange={(e) => handleModuleChange(idx, 'title', e.target.value)}
+                        placeholder="e.g. Introduction to Sensors"
+                        className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00E5FF] transition-colors"
+                      />
                     </div>
-
-                    <div className="grid grid-cols-1 gap-4">
-                      {/* Module Name */}
-                      <div>
-                        <label className="block mb-1 font-semibold">Module Name</label>
-                        <input
-                          type="text"
-                          value={module.name}
-                          onChange={(e) => updateModule(moduleIndex, "name", e.target.value)}
-                          className="w-full p-3 rounded-xl bg-white/20 text-white placeholder-white/70 outline-none"
-                          placeholder="Enter module name"
-                        />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Video URL / Upload</label>
+                        <div className="flex items-center gap-2">
+                          <input 
+                            type="text" value={mod.url || ""} onChange={(e) => handleModuleChange(idx, 'url', e.target.value)}
+                            placeholder="Link to video (or upload)"
+                            className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00E5FF] transition-colors"
+                          />
+                          <button className="p-3 bg-[#00E5FF]/10 text-[#00E5FF] rounded-xl hover:bg-[#00E5FF]/20 transition-colors shrink-0">
+                            <Upload size={20} />
+                          </button>
+                        </div>
                       </div>
-
-                      {/* Module Description */}
-                      <div>
-                        <label className="block mb-1 font-semibold">Module Description</label>
-                        <textarea
-                          rows="3"
-                          value={module.description}
-                          onChange={(e) => updateModule(moduleIndex, "description", e.target.value)}
-                          className="w-full p-3 rounded-xl bg-white/20 text-white placeholder-white/70 outline-none"
-                          placeholder="Describe this module"
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Text Notes</label>
+                        <textarea 
+                          value={mod.notes || ''} onChange={(e) => handleModuleChange(idx, 'notes', e.target.value)}
+                          placeholder="Add key notes or references for this module"
+                          rows="2"
+                          className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00E5FF] transition-colors resize-none"
                         ></textarea>
                       </div>
-
-                      {/* Lesson File Upload */}
-                      <div>
-                        <label className="block mb-1 font-semibold">Add Lesson File (PDF/Video/Docs)</label>
-                        <div className="border-2 border-dashed border-white/50 p-4 rounded-xl text-center cursor-pointer hover:bg-white/10 transition">
-                          <input
-                            type="file"
-                            className="hidden"
-                            onChange={(e) => updateModule(moduleIndex, "lessonFile", e.target.files[0])}
-                            id={`lessonUpload-${moduleIndex}`}
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">PDF Materials</label>
+                        <div className="flex items-center gap-2">
+                          <input 
+                            type="text" value={mod.pdf || ''} onChange={(e) => handleModuleChange(idx, 'pdf', e.target.value)}
+                            placeholder="URL to PDF file"
+                            className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#7C3AED] transition-colors"
                           />
-                          <label htmlFor={`lessonUpload-${moduleIndex}`} className="cursor-pointer">
-                            {module.lessonFile ? module.lessonFile.name : "Click to upload lesson file"}
+                          <label 
+                            className="p-3 bg-[#7C3AED]/10 text-[#7C3AED] rounded-xl hover:bg-[#7C3AED]/20 transition-colors shrink-0 cursor-pointer"
+                            title="Upload PDF Notes from Local Storage"
+                          >
+                            <Upload size={20} />
+                            <input 
+                              type="file" 
+                              accept=".pdf" 
+                              className="hidden" 
+                              onChange={(e) => {
+                                const file = e.target.files[0];
+                                if(file) {
+                                  // Simulate local upload by setting a fake path with the original file name
+                                  handleModuleChange(idx, 'pdf', `/local-storage/pdfs/${file.name}`);
+                                }
+                              }} 
+                            />
                           </label>
                         </div>
                       </div>
-
-                      {/* Quiz Section */}
-                      <div className="mt-2">
-                        <h4 className="text-lg font-bold mb-2">📝 Create Quiz</h4>
-                        {module.quizzes.map((quiz, quizIndex) => (
-                          <div key={quizIndex} className="p-4 mb-3 rounded-xl bg-white/10 border border-white/20">
-                            <div className="flex justify-between items-center mb-2">
-                              <label className="block font-semibold">
-                                Question {quizIndex + 1}
-                              </label>
-                              {module.quizzes.length > 1 && (
-                                <button
-                                  type="button"
-                                  onClick={() => removeQuiz(moduleIndex, quizIndex)}
-                                  className="text-red-300 hover:text-red-100"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              )}
-                            </div>
-                            <input
-                              type="text"
-                              className="w-full p-3 mb-3 rounded-xl bg-white/20 text-white placeholder-white/70 outline-none"
-                              placeholder="Enter quiz question"
-                              value={quiz.question}
-                              onChange={(e) => updateQuiz(moduleIndex, quizIndex, "question", e.target.value)}
-                            />
-
-                            <label className="block mb-1 font-semibold">Correct Answer</label>
-                            <input
-                              type="text"
-                              className="w-full p-3 rounded-xl bg-white/20 text-white placeholder-white/70 outline-none"
-                              placeholder="Answer for this question"
-                              value={quiz.answer}
-                              onChange={(e) => updateQuiz(moduleIndex, quizIndex, "answer", e.target.value)}
-                            />
-                          </div>
-                        ))}
-
-                        <button
-                          type="button"
-                          onClick={() => addQuiz(moduleIndex)}
-                          className="w-full mt-2 p-3 bg-white text-purple-700 rounded-xl font-bold hover:bg-white/80 transition"
-                        >
-                          ➕ Add Another Quiz Question
-                        </button>
-                      </div>
                     </div>
                   </div>
-                ))}
 
-                {/* Add Module Button */}
-                <button
-                  type="button"
-                  onClick={addModule}
-                  className="w-full p-4 border-2 border-dashed border-white/50 rounded-xl hover:bg-white/10 transition mb-6"
-                >
-                  <Plus className="w-6 h-6 mx-auto" />
-                  <span className="mt-2 block">Add Another Module</span>
-                </button>
-
-                <div className="flex justify-between pt-6">
-                  <button
-                    type="button"
-                    onClick={prevStep}
-                    className="flex items-center gap-2 text-white hover:text-white/80 transition-colors"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back to Basic Info
-                  </button>
-                  <button
-                    type="button"
-                    onClick={nextStep}
-                    className="bg-white text-purple-700 px-6 py-3 rounded-xl font-bold hover:bg-white/90 transition"
-                  >
-                    Continue to Content
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Content (Form 3) */}
-          {step === 3 && (
-            <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-1 rounded-2xl shadow-2xl">
-              <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 text-white">
-                <h1 className="text-3xl font-bold mb-6 text-center drop-shadow-lg">
-                  🎥 Upload Lessons – Content
-                </h1>
-
-                {/* Lessons */}
-                {courseData.lessons.map((lesson, index) => (
-                  <div key={index} className="mb-6 p-4 bg-white/10 rounded-xl">
+                  {/* Quizzes Section */}
+                  <div className="mt-6 pt-6 border-t border-white/10">
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-xl font-bold">Lesson {index + 1}</h3>
-                      {courseData.lessons.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeLesson(index)}
-                          className="text-red-300 hover:text-red-100"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      )}
+                      <h5 className="font-bold text-white text-sm">Module Quizzes ({(mod.quizzes || []).length}/10)</h5>
+                      <button 
+                        onClick={() => addQuiz(idx)}
+                        className="text-[#00E5FF] text-xs font-bold flex items-center gap-1 hover:underline"
+                      >
+                        <Plus size={14} /> Add Quiz Question
+                      </button>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4">
-                      {/* Lesson Title */}
-                      <div>
-                        <label className="block mb-1 font-semibold">Lesson Title</label>
-                        <input
-                          type="text"
-                          value={lesson.title}
-                          onChange={(e) => updateLesson(index, "title", e.target.value)}
-                          className="w-full p-3 rounded-xl bg-white/20 text-white placeholder-white/70 outline-none"
-                          placeholder="Enter lesson title"
-                        />
-                      </div>
-
-                      {/* Video Upload */}
-                      <div>
-                        <label className="block mb-2 font-semibold">
-                          Upload Lesson Video (MP4 / MOV / MKV)
-                        </label>
-                        <div className="border-2 border-dashed border-white/50 p-5 rounded-xl text-center cursor-pointer hover:bg-white/10 transition">
-                          <input
-                            type="file"
-                            accept="video/*"
-                            className="hidden"
-                            id={`videoUpload-${index}`}
-                            onChange={(e) => updateLesson(index, "videoFile", e.target.files[0])}
-                          />
-                          <label htmlFor={`videoUpload-${index}`} className="cursor-pointer">
-                            {lesson.videoFile ? (
-                              <span className="font-semibold">{lesson.videoFile.name}</span>
-                            ) : (
-                              <span className="text-white/80">Click to upload lesson video</span>
-                            )}
-                          </label>
+                    <div className="space-y-4">
+                      {(mod.quizzes || []).map((quiz, qIdx) => (
+                        <div key={quiz.id} className="bg-slate-900/50 rounded-xl p-4 border border-white/5 relative">
+                          <button 
+                            onClick={() => removeQuiz(idx, qIdx)}
+                            className="absolute top-4 right-4 text-slate-500 hover:text-red-400"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                          <div className="space-y-4 pr-8">
+                            <input 
+                              type="text" value={quiz.question || ""} onChange={(e) => handleQuizChange(idx, qIdx, 'question', e.target.value)}
+                              placeholder={`Question ${qIdx + 1}`}
+                              className="w-full bg-transparent border-b border-white/10 px-0 py-2 text-white focus:outline-none focus:border-[#00E5FF] transition-colors font-bold text-sm"
+                            />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              {quiz.options.map((opt, oIdx) => (
+                                <div key={oIdx} className="flex items-center gap-2">
+                                  <input 
+                                    type="radio" name={`quiz-${mod.id}-${quiz.id}`}
+                                    checked={quiz.answer === oIdx}
+                                    onChange={() => handleQuizChange(idx, qIdx, 'answer', oIdx)}
+                                    className="accent-[#00E5FF]"
+                                  />
+                                  <input 
+                                    type="text" value={opt || ""} onChange={(e) => handleQuizOptionChange(idx, qIdx, oIdx, e.target.value)}
+                                    placeholder={`Option ${oIdx + 1}`}
+                                    className="w-full bg-black/20 border border-white/5 rounded-lg px-3 py-1.5 text-slate-300 focus:outline-none focus:border-white/20 text-xs"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
-                ))}
+                </div>
+              ))}
+            </div>
 
-                {/* Add Lesson Button */}
-                <button
-                  type="button"
-                  onClick={addLesson}
-                  className="w-full p-4 border-2 border-dashed border-white/50 rounded-xl hover:bg-white/10 transition mb-6"
-                >
-                  <Plus className="w-6 h-6 mx-auto" />
-                  <span className="mt-2 block">Add Another Lesson</span>
-                </button>
+            <button 
+              onClick={addModule}
+              className="w-full py-4 border-2 border-dashed border-white/20 hover:border-[#00E5FF] text-slate-400 hover:text-[#00E5FF] rounded-2xl flex items-center justify-center gap-2 font-bold transition-all"
+            >
+              <Plus size={20} /> Add New Module
+            </button>
 
-                <div className="flex justify-between pt-6">
-                  <button
-                    type="button"
-                    onClick={prevStep}
-                    className="flex items-center gap-2 text-white hover:text-white/80 transition-colors"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back to Curriculum
-                  </button>
-                  <button
-                    type="button"
-                    onClick={nextStep}
-                    className="bg-white text-purple-700 px-6 py-3 rounded-xl font-bold hover:bg-white/90 transition"
-                  >
-                    Continue to Pricing
-                  </button>
+            {/* Final Task Section */}
+            <div className="bg-[#7C3AED]/10 border border-[#7C3AED]/30 rounded-2xl p-6 shadow-lg mt-8">
+              <div className="flex items-center gap-2 mb-4">
+                <Target className="text-[#7C3AED] w-6 h-6" />
+                <h4 className="font-bold text-white text-lg">Final Project / Task</h4>
+              </div>
+              <p className="text-slate-400 text-sm mb-4">
+                Students must complete this final task to achieve 100% course completion.
+              </p>
+              
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Task Title</label>
+                  <input 
+                    type="text" 
+                    value={courseData.finalTask?.title || ""} 
+                    onChange={(e) => setCourseData(prev => ({...prev, finalTask: {...prev.finalTask, title: e.target.value}}))}
+                    placeholder="e.g. Build an Autonomous Drone"
+                    className="w-full bg-slate-900/50 border border-[#7C3AED]/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#7C3AED] transition-colors"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Task Requirements / Description</label>
+                  <textarea 
+                    value={courseData.finalTask?.description || ""} 
+                    onChange={(e) => setCourseData(prev => ({...prev, finalTask: {...prev.finalTask, description: e.target.value}}))}
+                    placeholder="Describe what the student needs to submit to complete this course."
+                    rows="3"
+                    className="w-full bg-slate-900/50 border border-[#7C3AED]/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#7C3AED] transition-colors resize-none"
+                  ></textarea>
                 </div>
               </div>
             </div>
-          )}
 
-          {/* Step 4: Pricing */}
-          {step === 4 && (
-            <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-1 rounded-2xl shadow-2xl">
-              <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 text-white">
-                <h1 className="text-3xl font-bold mb-6 text-center drop-shadow-lg">
-                  💰 Pricing & Finalization
-                </h1>
+            <div className="flex justify-between pt-6 border-t border-white/10 mt-8">
+              <button onClick={() => setActiveStep(1)} className="px-6 py-3 bg-white/5 text-white rounded-xl font-bold hover:bg-white/10 transition-colors">
+                Back
+              </button>
+              <button onClick={() => setActiveStep(3)} className="px-6 py-3 bg-[#7C3AED] text-white rounded-xl font-bold flex items-center gap-2">
+                Continue to Publish <ChevronRight size={18} />
+              </button>
+            </div>
+          </motion.div>
+        )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Course Price in USD */}
-                  <div>
-                    <label className="block mb-2 font-semibold">Course Price (USD)</label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/70 w-5 h-5" />
-                      <input
-                        type="number"
-                        name="price"
-                        value={courseData.price}
-                        onChange={handleInputChange}
-                        placeholder="0.00"
-                        min="0"
-                        step="0.01"
-                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/20 text-white placeholder-white/70 outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Course Price in Coins */}
-                  <div>
-                    <label className="block mb-2 font-semibold">Price in Coins</label>
-                    <div className="relative">
-                      <Coins className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/70 w-5 h-5" />
-                      <input
-                        type="number"
-                        value={courseData.priceInCoins}
-                        readOnly
-                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/20 text-white placeholder-white/70 outline-none"
-                      />
-                    </div>
-                    <p className="text-sm text-white/70 mt-2">
-                      Conversion rate: 1 USD = {COIN_RATE} coins
-                    </p>
-                  </div>
-
-                  {/* Difficulty Level */}
-                  <div className="md:col-span-2">
-                    <label className="block mb-2 font-semibold">Difficulty Level</label>
-                    <select
-                      name="level"
-                      value={courseData.level}
-                      onChange={handleInputChange}
-                      className="w-full p-3 rounded-xl bg-white/20 text-white placeholder-white/70 outline-none"
-                    >
-                      <option value="beginner">Beginner</option>
-                      <option value="intermediate">Intermediate</option>
-                      <option value="advanced">Advanced</option>
-                    </select>
-                  </div>
+        {/* Step 3: Publish */}
+        {activeStep === 3 && (
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+            <h3 className="text-xl font-bold text-white mb-6 border-b border-white/10 pb-4">Pricing</h3>
+            
+            <div className="max-w-md gap-8">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Course Price (₹)</label>
+                  <input 
+                    type="number" name="price" value={courseData.price || ""} onChange={handleInputChange}
+                    placeholder="e.g. 1999"
+                    className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00E5FF] transition-colors text-2xl font-black"
+                  />
                 </div>
-
-                {/* Pricing Information */}
-                <div className="mt-6 p-4 bg-white/10 rounded-xl border border-white/20">
-                  <h4 className="font-semibold mb-3">💰 Pricing Information</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="flex justify-between mb-2">
-                        <span>Course Price:</span>
-                        <span>${courseData.price || "0.00"}</span>
-                      </p>
-                      <p className="flex justify-between mb-2">
-                        <span>Price in Coins:</span>
-                        <span className="flex items-center gap-1">
-                          <Coins className="w-4 h-4" />
-                          {courseData.priceInCoins}
-                        </span>
-                      </p>
-                    </div>
-                    <div>
-                      <p className="flex justify-between mb-2">
-                        <span>Platform Fee (30%):</span>
-                        <span>${(courseData.price * 0.3).toFixed(2)}</span>
-                      </p>
-                      <p className="flex justify-between font-semibold">
-                        <span>Your Earnings (70%):</span>
-                        <span>${(courseData.price * 0.7).toFixed(2)}</span>
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-between pt-6">
-                  <button
-                    type="button"
-                    onClick={prevStep}
-                    className="flex items-center gap-2 text-white hover:text-white/80 transition-colors"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back to Content
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="bg-white text-purple-700 px-6 py-3 rounded-xl font-bold hover:bg-white/90 transition disabled:opacity-50"
-                  >
-                    {loading ? "Creating..." : "Create Course"}
-                  </button>
+                
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-start gap-3 text-emerald-400">
+                  <AlertCircle size={20} className="shrink-0 mt-0.5" />
+                  <p className="text-sm font-medium">Setting the price to 0 makes this a free course. Premium courses earn you 70% revenue share.</p>
                 </div>
               </div>
             </div>
-          )}
-        </form>
+
+            <div className="flex justify-between pt-6 border-t border-white/10 mt-8">
+              <button onClick={() => setActiveStep(2)} className="px-6 py-3 bg-white/5 text-white rounded-xl font-bold hover:bg-white/10 transition-colors">
+                Back
+              </button>
+              <button onClick={handleSubmit} className="px-8 py-3 bg-gradient-to-r from-[#00E5FF] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#00E5FF] text-white rounded-xl font-bold shadow-[0_0_20px_rgba(124,58,237,0.4)] transition-all flex items-center gap-2">
+                <Send size={18} /> Publish Course
+              </button>
+            </div>
+          </motion.div>
+        )}
+
       </div>
     </div>
   );

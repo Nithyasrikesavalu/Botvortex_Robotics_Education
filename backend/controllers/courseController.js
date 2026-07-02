@@ -12,7 +12,9 @@ export const getCourses = async (req, res) => {
 
 export const getCourseById = async (req, res) => {
     try {
-        const course = await Course.findOne({ id: req.params.id });
+        const isNumeric = !isNaN(req.params.id);
+        const query = isNumeric ? { id: req.params.id } : { courseId: req.params.id };
+        const course = await Course.findOne(query);
         if (!course) return res.status(404).json({ message: "Course not found" });
         res.json(course);
     } catch (error) {

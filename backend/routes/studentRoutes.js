@@ -8,7 +8,9 @@ import {
     updateCourseProgress,
     initializeDemoCourses,
     deleteAccount,
-    addCoins
+    addCoins,
+    submitReview,
+    getMyReviews
 } from "../controllers/studentController.js";
 
 const router = express.Router();
@@ -27,5 +29,9 @@ router.post("/courses", enrollInCourse); // Enroll
 router.put("/courses/:courseId", updateCourseProgress); // Update progress
 router.post("/courses/init-demo", initializeDemoCourses); // Dev helper
 router.post("/add-coins", addCoins); // Add coins
+
+// Reviews
+router.post("/reviews", submitReview);
+router.get("/reviews", getMyReviews);
 
 export default router;

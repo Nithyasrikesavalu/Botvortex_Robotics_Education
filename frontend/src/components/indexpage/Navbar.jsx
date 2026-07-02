@@ -14,6 +14,7 @@ import {
   Settings,
   LogOut,
   Coins,
+  LayoutDashboard,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
@@ -43,7 +44,10 @@ const Navbar = () => {
   ];
 
   /* New State for User Data */
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState(() => {
+    const stored = localStorage.getItem("user");
+    return stored ? JSON.parse(stored) : null;
+  });
 
   /* Dynamic Profile Items based on Role */
   const getProfileItems = () => {
@@ -60,8 +64,7 @@ const Navbar = () => {
     }
 
     return [
-      { name: "My Dashboard", icon: User, path: "/dashboard" },
-      { name: "My Courses", icon: BookOpen, path: "/my-courses" },
+      { name: "My Dashboard", icon: LayoutDashboard, path: "/dashboard" },
       ...baseItems
     ];
   };
@@ -186,9 +189,9 @@ const Navbar = () => {
                 className="flex items-center bg-[#0F1B2E] border border-[#1E2A40] px-2 py-1 rounded-full hover:border-[#00C3FF] transition-all cursor-pointer group"
               >
                 <img
-                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userData.fullName || userData.personal?.name || 'User')}&background=0D8ABC&color=fff`}
+                  src={userData.avatar || userData.personal?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.fullName || userData.personal?.name || 'User')}&background=0D8ABC&color=fff`}
                   alt={userData.fullName || userData.personal?.name}
-                  className="w-8 h-8 rounded-full group-hover:border-2 group-hover:border-[#00C3FF] transition-all"
+                  className="w-8 h-8 rounded-full object-cover group-hover:border-2 group-hover:border-[#00C3FF] transition-all"
                 />
                 <span className="ml-2 text-sm font-semibold text-white pr-2 group-hover:text-[#00C3FF] transition-colors">
                   {userData.fullName || userData.personal?.name}
@@ -202,9 +205,9 @@ const Navbar = () => {
                   <div className="flex items-center justify-between px-4 py-4 border-b border-[#1E2A40] hover:bg-[#1a2333] transition-colors rounded-t-2xl cursor-pointer">
                     <div className="flex items-center">
                       <img
-                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userData.fullName || userData.personal?.name || 'User')}&background=0D8ABC&color=fff`}
+                        src={userData.avatar || userData.personal?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.fullName || userData.personal?.name || 'User')}&background=0D8ABC&color=fff`}
                         alt={userData.fullName || userData.personal?.name}
-                        className="w-12 h-12 rounded-full border-2 border-[#00C3FF]"
+                        className="w-12 h-12 rounded-full object-cover border-2 border-[#00C3FF]"
                       />
                       <div className="ml-3">
                         <div className="text-white font-bold">{userData.fullName || userData.personal?.name}</div>
@@ -336,9 +339,9 @@ const Navbar = () => {
                 <div className="flex items-center justify-between px-6 py-4 hover:bg-[#1a2333] transition-colors rounded-lg mx-2 mb-2 group">
                   <div className="flex items-center space-x-3">
                     <img
-                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userData.fullName || userData.personal?.name || 'User')}&background=0D8ABC&color=fff`}
+                      src={userData.avatar || userData.personal?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.fullName || userData.personal?.name || 'User')}&background=0D8ABC&color=fff`}
                       alt={userData.fullName || userData.personal?.name}
-                      className="w-12 h-12 rounded-full border-2 border-[#00C3FF] group-hover:border-[#8A5DFF] transition-colors"
+                      className="w-12 h-12 rounded-full object-cover border-2 border-[#00C3FF] group-hover:border-[#8A5DFF] transition-colors"
                     />
                     <div>
                       <div className="text-white font-bold group-hover:text-[#00C3FF] transition-colors">

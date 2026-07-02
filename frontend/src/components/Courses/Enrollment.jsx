@@ -14,7 +14,7 @@ const fallbackCourses = [
     coins: 500,
     rating: 4.8,
     image: "https://images.unsplash.com/photo-1581094271901-8022df4466f9",
-    instructor: "Dr. Sarah Chen",
+    instructor: "Alexbenson",
     videoNotes: 20,
     pdfNotes: 15,
     quizzes: 5,
@@ -132,7 +132,8 @@ const Enrollment = () => {
           thumbnailEmoji: course.thumbnailEmoji || "🤖",
           totalLessons: course.videoNotes || course.lectures || 10,
           totalTests: course.quizzes || 0,
-          progress: 0
+          progress: 0,
+          coins: course.coins || 0
         })
       });
 
@@ -298,7 +299,7 @@ const Enrollment = () => {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 p-6 rounded-2xl border border-white/5 space-y-4">
+              <div className={"bg-gradient-to-br from-slate-800/50 to-slate-900/50 p-6 rounded-2xl border border-white/5 space-y-4"}>
                 <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Package Inventory</h4>
                 <div className="space-y-3">
                   {[
@@ -506,23 +507,33 @@ const Enrollment = () => {
                         >
                           Revise Info
                         </button>
-                        <button
-                          onClick={handleEnroll}
-                          disabled={remainingCoins < 0 || paid}
-                          className="flex-1 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white font-black rounded-2xl shadow-[0_10px_20px_-10px_rgba(37,99,235,0.5)] transition-all flex items-center justify-center gap-3 group"
-                        >
-                          {paid ? (
-                            <>
-                              <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
-                              PROCESSING...
-                            </>
-                          ) : (
-                            <>
-                              AUTHORIZE & START MISSION
-                              <FaRocket className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" />
-                            </>
-                          )}
-                        </button>
+                        {remainingCoins < 0 ? (
+                          <button
+                            onClick={() => alert("Redirecting to Coin Store... (Feature under development)")}
+                            className="flex-1 px-8 py-4 bg-amber-500 hover:bg-amber-400 text-black font-black rounded-2xl shadow-[0_10px_20px_-10px_rgba(245,158,11,0.5)] transition-all flex items-center justify-center gap-3 group"
+                          >
+                            BUY COINS
+                            <FaCoins className="group-hover:scale-110 transition-transform" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={handleEnroll}
+                            disabled={paid}
+                            className="flex-1 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white font-black rounded-2xl shadow-[0_10px_20px_-10px_rgba(37,99,235,0.5)] transition-all flex items-center justify-center gap-3 group"
+                          >
+                            {paid ? (
+                              <>
+                                <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
+                                PROCESSING...
+                              </>
+                            ) : (
+                              <>
+                                AUTHORIZE & START MISSION
+                                <FaRocket className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" />
+                              </>
+                            )}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

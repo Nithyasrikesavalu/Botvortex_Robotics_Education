@@ -11,6 +11,7 @@ const StudentProfileSchema = new mongoose.Schema({
         name: { type: String, default: '' },
         firstName: { type: String, default: '' },
         lastName: { type: String, default: '' },
+        avatar: { type: String, default: '' },
         role: { type: String, default: '' },
         studentId: { type: String, default: '' },
         phone: { type: String, default: '' },

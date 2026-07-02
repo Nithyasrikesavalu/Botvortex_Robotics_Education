@@ -10,30 +10,36 @@ const ContentContent = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("all");
 
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [courses, setCourses] = useState([
+    'Introduction to Robotics',
+    'Advanced Embedded Systems',
+    'Python for Automation',
+    'IoT Architecture',
+    'AI-Powered Robotics Mastery',
+    'Master of Robotics Engineering',
+    'Advanced Control Systems',
+    'Embedded Systems 101',
+    'Computer Vision for Drones',
+    'ROS (Robot Operating System) Basics',
+    'Autonomous Vehicles: Path Planning',
+    'Machine Learning for Robotics',
+    'Deep Learning and Neural Networks',
+    'Sensor Fusion & Perception',
+    'Kinematics and Dynamics of Robots',
+    'Reinforcement Learning in AI',
+    'Industrial Robotics & Automation',
+    'Mobile Robot Navigation',
+    'Haptics and Teleoperation',
+    'Drone Swarm Algorithms',
+    'Human-Robot Interaction',
+    'Cyber-Physical Systems',
+    'Robotic Grasping and Manipulation',
+    'Edge AI and TinyML'
+  ]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      const token = localStorage.getItem("instructor_token");
-      if (!token) return;
-
-      try {
-        const response = await fetch(`${API_URL}/instructor/courses`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setCourses(data.map(c => c.title));
-        }
-      } catch (err) {
-        console.error("Error fetching courses:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCourses();
+    // Uses static courses array
   }, []);
 
   const contentTypes = [
@@ -426,7 +432,7 @@ const ContentContent = () => {
                 Select Course
               </label>
               <select
-                value={selectedUploadCourse}
+                value={selectedUploadCourse || ""}
                 onChange={(e) => setSelectedUploadCourse(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
               >
@@ -557,13 +563,13 @@ const ContentContent = () => {
             <input
               type="text"
               placeholder="Search documents..."
-              value={searchTerm}
+              value={searchTerm || ""}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
             />
           </div>
           <select
-            value={selectedCourse}
+            value={selectedCourse || ""}
             onChange={(e) => setSelectedCourse(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
           >

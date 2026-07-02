@@ -9,7 +9,7 @@ const ProgramsPage = () => {
     }, []);
 
     return (
-        <div className="bg-[#0B1426]">
+        <div className="bg-[#060D1A] min-h-screen">
             <Navbar />
             <div className="pt-16">
                 <ProgramDetails />

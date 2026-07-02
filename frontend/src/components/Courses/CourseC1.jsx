@@ -105,7 +105,7 @@ const CourseC1 = () => {
     <div className="min-h-screen w-full bg-white text-gray-900">
       {/* HERO SECTION - With Background Image */}
       <div 
-        className="relative py-20 px-6 bg-cover bg-center bg-no-repeat"
+        className="relative pt-32 pb-20 px-6 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url("https://images.unsplash.com/photo-1485827404703-89b55fcc595e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80")'
         }}
@@ -441,7 +441,7 @@ const CourseC1 = () => {
               <div className="flex flex-col items-center">
                 <img
                   src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face"
-                  alt="Dr. Sarah Chen"
+                  alt="Alexbenson"
                   className="w-32 h-32 rounded-full object-cover border-4 border-blue-100 shadow-lg"
                 />
                 <div className="mt-4 text-center">
@@ -456,7 +456,7 @@ const CourseC1 = () => {
 
               <div className="md:col-span-3">
                 <div className="mb-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">Dr. Sarah Chen</h3>
+                  <h3 className="text-xl font-bold text-gray-900 mb-1">Alexbenson</h3>
                   <p className="text-blue-600 font-medium">Senior Robotics Engineer & Research Lead</p>
                 </div>
                 

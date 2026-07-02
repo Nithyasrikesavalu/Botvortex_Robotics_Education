@@ -1,4 +1,4 @@
-
+import { API_URL } from "../../config/api";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bot, Eye, EyeOff, Mail, Lock, LogIn, User, Users, X, KeyRound, CheckCircle } from "lucide-react";
@@ -46,7 +46,7 @@ const SignIn = () => {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: formData.email, password: formData.password })
@@ -57,7 +57,7 @@ const SignIn = () => {
       if (!res.ok) {
         if (res.status === 404) {
           alert("Account not found. Redirecting to registration...");
-          navigate('/login'); // Redirect to Register page
+          navigate('/signup'); // Redirect to Register page
           return;
         }
 
@@ -84,8 +84,8 @@ const SignIn = () => {
           state: { email: formData.email, role: "student" }
         });
       } else {
-        localStorage.setItem("instructor_token", data.token);
-        localStorage.setItem("instructor_user", JSON.stringify(data.user));
+        localStorage.setItem("instructorToken", data.token);
+        localStorage.setItem("instructorUser", JSON.stringify(data.user));
         navigate('/instructor-dashboard', {
           state: { email: formData.email, role: "instructor" }
         });
@@ -114,7 +114,7 @@ const SignIn = () => {
     setForgotPasswordLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/send-forgot-otp", {
+      const res = await fetch(`${API_URL}/auth/send-forgot-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: forgotPasswordData.email })
@@ -151,7 +151,7 @@ const SignIn = () => {
     setForgotPasswordLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/verify-forgot-otp", {
+      const res = await fetch(`${API_URL}/auth/verify-forgot-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -205,7 +205,7 @@ const SignIn = () => {
     setForgotPasswordLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/reset-password", {
+      const res = await fetch(`${API_URL}/auth/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

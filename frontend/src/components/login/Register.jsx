@@ -357,7 +357,7 @@ const Register = () => {
         localStorage.setItem("token", data.token);
         navigate("/index");
       } else {
-        localStorage.setItem("instructor_token", data.token);
+        localStorage.setItem("token", data.token);
         navigate("/instructor-dashboard");
       }
 

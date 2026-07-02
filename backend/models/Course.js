@@ -33,7 +33,11 @@ const CourseSchema = new mongoose.Schema({
         resources: { type: Number, default: 0 },
         order: { type: Number },
         createdAt: { type: Date, default: Date.now }
-    }]
+    }],
+    finalTask: {
+        title: { type: String, default: '' },
+        description: { type: String, default: '' }
+    }
 }, { timestamps: true });
 
 export default mongoose.model('Course', CourseSchema);

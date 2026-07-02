@@ -75,12 +75,12 @@ const ProgramDetails = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-[#0B1426] text-white">
+        <div className="min-h-screen bg-[#060D1A] text-white">
             {/* Hero Section */}
             <section className="relative py-20 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 z-0"></div>
-                <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -mr-48 -mt-48"></div>
-                <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -ml-48 -mb-48"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-[#00E5FF]/10 to-[#7C3AED]/10 z-0"></div>
+                <div className="absolute top-0 right-0 w-96 h-96 bg-[#00E5FF]/10 rounded-full blur-[120px] -mr-48 -mt-48 pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#7C3AED]/10 rounded-full blur-[120px] -ml-48 -mb-48 pointer-events-none"></div>
 
                 <div className="container mx-auto px-6 relative z-10">
                     <motion.div
@@ -88,13 +88,13 @@ const ProgramDetails = () => {
                         animate={{ opacity: 1, y: 0 }}
                         className="max-w-3xl mx-auto text-center"
                     >
-                        <span className="inline-block px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-semibold mb-6">
+                        <span className="inline-block px-4 py-1.5 rounded-full bg-[#00E5FF]/10 border border-[#00E5FF]/20 text-[#00E5FF] text-sm font-semibold mb-6 uppercase tracking-wider">
                             Our Academic Programs
                         </span>
-                        <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-blue-200 to-blue-400 bg-clip-text text-transparent">
+                        <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-[#00E5FF] to-[#7C3AED] bg-clip-text text-transparent">
                             Master the Future of <br />Autonomous Robotics
                         </h1>
-                        <p className="text-gray-400 text-lg md:text-xl leading-relaxed">
+                        <p className="text-slate-400 text-lg md:text-xl leading-relaxed">
                             Explore our comprehensive curriculum designed by industry experts to transform
                             enthusiasts into world-class robotics engineers through hands-on learning.
                         </p>
@@ -116,14 +116,14 @@ const ProgramDetails = () => {
                             <motion.div
                                 key={idx}
                                 variants={itemVariants}
-                                className="group relative bg-[#152033] border border-blue-900/50 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all duration-300"
+                                className="group relative bg-[#0A192F]/60 backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden hover:border-[#00E5FF]/30 transition-all duration-300 hover:shadow-2xl hover:shadow-[#00E5FF]/5"
                             >
                                 <div className="p-8">
-                                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20`}>
+                                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#00E5FF] to-[#7C3AED] flex items-center justify-center mb-6 shadow-lg shadow-[#00E5FF]/20">
                                         <program.icon className="w-8 h-8 text-white" />
                                     </div>
-                                    <h3 className="text-2xl font-bold mb-2 group-hover:text-blue-400 transition-colors">{program.title}</h3>
-                                    <div className="flex gap-4 mb-4 text-sm text-gray-500">
+                                    <h3 className="text-2xl font-bold mb-2 group-hover:text-[#00E5FF] transition-colors">{program.title}</h3>
+                                    <div className="flex gap-4 mb-4 text-sm text-slate-400">
                                         <span className="flex items-center gap-1.5">
                                             <Clock className="w-4 h-4" /> {program.duration}
                                         </span>
@@ -137,20 +137,12 @@ const ProgramDetails = () => {
 
                                     <div className="space-y-3 mb-8">
                                         {program.modules.map((module, midx) => (
-                                            <div key={midx} className="flex items-center gap-3 text-sm text-gray-300">
-                                                <CheckCircle className="w-4 h-4 text-blue-500" />
+                                            <div key={midx} className="flex items-center gap-3 text-sm text-slate-300">
+                                                <CheckCircle className="w-4 h-4 text-[#00E5FF]" />
                                                 {module}
                                             </div>
                                         ))}
                                     </div>
-
-                                    <Link
-                                        to="/enroll"
-                                        state={{ course: program }}
-                                        className="flex items-center justify-center w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all duration-300 gap-2"
-                                    >
-                                        Enroll Now <ChevronRight className="w-5 h-5" />
-                                    </Link>
                                 </div>
                             </motion.div>
                         ))}
@@ -159,8 +151,8 @@ const ProgramDetails = () => {
             </section>
 
             {/* Statistics Section */}
-            <section className="py-20 bg-[#0F1B30]">
-                <div className="container mx-auto px-6">
+            <section className="py-20 bg-[#0A192F]/40 border-y border-white/5 relative">
+                <div className="container mx-auto px-6 relative z-10">
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                         {[
                             { label: "Active Students", value: "5,000+", icon: Users },
@@ -175,11 +167,11 @@ const ProgramDetails = () => {
                                 viewport={{ once: true }}
                                 className="text-center"
                             >
-                                <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
-                                    <stat.icon className="w-6 h-6 text-blue-500" />
+                                <div className="w-12 h-12 bg-[#00E5FF]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#00E5FF]/20">
+                                    <stat.icon className="w-6 h-6 text-[#00E5FF]" />
                                 </div>
-                                <h4 className="text-3xl font-bold mb-1">{stat.value}</h4>
-                                <p className="text-gray-500 text-sm uppercase tracking-wider">{stat.label}</p>
+                                <h4 className="text-3xl font-black text-white mb-2">{stat.value}</h4>
+                                <p className="text-slate-400 text-sm uppercase tracking-widest font-bold">{stat.label}</p>
                             </motion.div>
                         ))}
                     </div>

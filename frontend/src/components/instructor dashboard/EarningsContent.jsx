@@ -1,273 +1,190 @@
 import React from "react";
-import { Coins, TrendingUp, Users, Calendar, Download, Filter, Award, Gift, Crown, Zap, DollarSign } from "lucide-react";
+import { motion } from "framer-motion";
+import { DollarSign, TrendingUp, Users, Calendar, Download, Filter, Award, Crown, ArrowUpRight, CheckCircle2 } from "lucide-react";
 
-const EarningsContent = ({ data }) => {
-  const { stats = { totalStudents: 0, totalCourses: 0, totalEarnings: 0 }, earnings = [], students = [] } = data;
+const EarningsContent = ({ instructor }) => {
+  if (!instructor) return null;
+  const { stats } = instructor;
 
-  // Use real students as recent transactions
-  const recentTransactions = students.map((s, idx) => ({
-    id: s.id || idx,
-    student: s.name,
-    course: s.course,
-    coins: stats.totalEarnings / stats.totalStudents || 0, // Approximation or actual price if we had it per enrollment
-    date: s.joinDate ? new Date(s.joinDate).toLocaleDateString() : "Recent",
-    type: "course_sale",
-    icon: "🎓"
-  }));
+  const earningsData = {
+    totalRevenue: stats.totalEarnings,
+    currentMonth: 1250,
+    averageMonthly: 980,
+    growthPercentage: 15.4
+  };
 
-  // If no students yet, show empty or a few placeholders
-  const earningsData = earnings.length > 0 ? earnings : [
-    { month: "Jan", coins: 0, students: 0 },
-    { month: "Feb", coins: 0, students: 0 },
-    { month: "Mar", coins: 0, students: 0 },
-    { month: "Apr", coins: 0, students: 0 },
-    { month: "May", coins: 0, students: 0 },
-    { month: "Jun", coins: 0, students: 0 }
+  const recentTransactions = [
+    { id: 1, student: "Sarah Johnson", course: "Advanced AI Robotics", amount: 1999, date: "Today, 10:30 AM", type: "course_sale" },
+    { id: 2, student: "Michael Chen", course: "IoT Systems", amount: 1499, date: "Yesterday, 3:15 PM", type: "course_sale" },
+    { id: 3, student: "Platform Bonus", course: "Top Rated Instructor", amount: 500, date: "Oct 15", type: "bonus" },
   ];
 
-  const rewardsMilestones = [
-    { coins: 1000, reward: "Bronze Badge", achieved: true },
-    { coins: 2500, reward: "Silver Badge", achieved: true },
-    { coins: 5000, reward: "Gold Badge", achieved: true },
-    { coins: 10000, reward: "Platinum Rank", achieved: false },
-    { coins: 25000, reward: "Diamond Tier", achieved: false },
-    { coins: 50000, reward: "Master Instructor", achieved: false }
+  const milestones = [
+    { target: 5000, reward: "Silver Instructor Badge", achieved: true },
+    { target: 10000, reward: "Gold Tier & 5% Bonus", achieved: false },
+    { target: 25000, reward: "Platinum Elite Status", achieved: false },
   ];
-
-  const calculateStats = () => {
-    const currentMonth = earningsData[earningsData.length - 1];
-    const previousMonth = earningsData[earningsData.length - 2];
-    const growthPercentage = previousMonth ? ((currentMonth.coins - previousMonth.coins) / previousMonth.coins * 100).toFixed(1) : 0;
-
-    const totalCoins = earningsData.reduce((sum, month) => sum + month.coins, 0);
-    const averageMonthly = Math.round(totalCoins / earningsData.length);
-    const totalStudents = earningsData.reduce((sum, month) => sum + month.students, 0);
-
-    return {
-      currentMonth,
-      growthPercentage,
-      totalCoins,
-      averageMonthly,
-      totalStudents
-    };
-  };
-
-  const statsData = calculateStats();
-
-  const getTransactionColor = (type) => {
-    switch (type) {
-      case 'course_sale': return 'text-green-600 bg-green-100';
-      case 'bonus': return 'text-yellow-600 bg-yellow-100';
-      case 'referral': return 'text-purple-600 bg-purple-100';
-      default: return 'text-blue-600 bg-blue-100';
-    }
-  };
-
-  const getTransactionLabel = (type) => {
-    switch (type) {
-      case 'course_sale': return 'Course Sale';
-      case 'bonus': return 'Bonus';
-      case 'referral': return 'Referral';
-      default: return 'Reward';
-    }
-  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 pb-10">
+      
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#0A192F]/60 backdrop-blur-md rounded-3xl p-6 md:p-8 border border-white/5 shadow-xl">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Revenue & Earnings</h2>
-          <p className="text-gray-600 mt-1">Track your financial growth and rewards</p>
+          <h2 className="text-3xl font-black text-white flex items-center gap-3">
+            <DollarSign className="text-emerald-400 w-8 h-8" />
+            Revenue & Earnings
+          </h2>
+          <p className="text-slate-400 mt-1">Track your financial growth, payouts, and milestones.</p>
         </div>
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-            <Filter className="w-4 h-4" />
-            Filter
+          <button className="flex items-center gap-2 bg-white/5 border border-white/10 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-white/10 transition-colors">
+            <Filter size={18} /> Filter
           </button>
-          <button className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all">
-            <DollarSign className="w-4 h-4" />
-            Withdraw Funds
+          <button className="flex items-center gap-2 bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-900 px-6 py-2.5 rounded-xl font-black hover:shadow-[0_0_20px_rgba(52,211,153,0.4)] transition-all">
+            <DollarSign size={18} /> Withdraw Funds
           </button>
         </div>
       </div>
 
-      {/* Key Metrics */}
+      {/* Key Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold text-gray-900">₹{statsData.totalCoins.toLocaleString()}</p>
-              <p className="text-gray-600 text-sm">Total Revenue</p>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }} className="bg-[#0A192F]/60 backdrop-blur-md rounded-3xl p-6 border border-white/5 hover:border-emerald-400/30 transition-all group">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-emerald-400/10 text-emerald-400 rounded-xl group-hover:scale-110 transition-transform">
+              <DollarSign size={24} />
             </div>
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <DollarSign className="w-6 h-6 text-purple-600" />
+            <div className="flex items-center gap-1 bg-emerald-400/10 px-2 py-1 rounded-lg">
+              <TrendingUp size={12} className="text-emerald-400" />
+              <span className="text-emerald-400 text-xs font-bold">+12%</span>
             </div>
           </div>
-          <div className="flex items-center gap-1 mt-2">
-            <TrendingUp className="w-4 h-4 text-green-500" />
-            <span className="text-green-600 text-sm font-medium">All Time Growth</span>
-          </div>
-        </div>
+          <p className="text-3xl font-black text-white mb-1">₹{earningsData.totalRevenue.toLocaleString()}</p>
+          <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Total Revenue</p>
+        </motion.div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold text-gray-900">₹{statsData.currentMonth.coins.toLocaleString()}</p>
-              <p className="text-gray-600 text-sm">Monthly Earnings</p>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-[#0A192F]/60 backdrop-blur-md rounded-3xl p-6 border border-white/5 hover:border-[#00E5FF]/30 transition-all group">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-[#00E5FF]/10 text-[#00E5FF] rounded-xl group-hover:scale-110 transition-transform">
+              <Calendar size={24} />
             </div>
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Calendar className="w-6 h-6 text-blue-600" />
+            <div className="flex items-center gap-1 bg-emerald-400/10 px-2 py-1 rounded-lg">
+              <TrendingUp size={12} className="text-emerald-400" />
+              <span className="text-emerald-400 text-xs font-bold">+{earningsData.growthPercentage}%</span>
             </div>
           </div>
-          <div className="flex items-center gap-1 mt-2">
-            <TrendingUp className="w-4 h-4 text-green-500" />
-            <span className="text-green-600 text-sm font-medium">+{statsData.growthPercentage}% from last month</span>
-          </div>
-        </div>
+          <p className="text-3xl font-black text-white mb-1">₹{earningsData.currentMonth.toLocaleString()}</p>
+          <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">This Month</p>
+        </motion.div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold text-gray-900">₹{statsData.averageMonthly.toLocaleString()}</p>
-              <p className="text-gray-600 text-sm">Avg Monthly</p>
-            </div>
-            <div className="p-3 bg-indigo-100 rounded-lg">
-              <TrendingUp className="w-6 h-6 text-indigo-600" />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-[#0A192F]/60 backdrop-blur-md rounded-3xl p-6 border border-white/5 hover:border-[#7C3AED]/30 transition-all group">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-[#7C3AED]/10 text-[#7C3AED] rounded-xl group-hover:scale-110 transition-transform">
+              <TrendingUp size={24} />
             </div>
           </div>
-          <div className="flex items-center gap-1 mt-2">
-            <span className="text-gray-600 text-sm">Monthly average income</span>
-          </div>
-        </div>
+          <p className="text-3xl font-black text-white mb-1">₹{earningsData.averageMonthly.toLocaleString()}</p>
+          <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Avg Monthly</p>
+        </motion.div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{statsData.totalStudents}</p>
-              <p className="text-gray-600 text-sm">Paid Students</p>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-[#0A192F]/60 backdrop-blur-md rounded-3xl p-6 border border-white/5 hover:border-blue-400/30 transition-all group">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-blue-400/10 text-blue-400 rounded-xl group-hover:scale-110 transition-transform">
+              <Users size={24} />
             </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <Users className="w-6 h-6 text-green-600" />
+            <div className="flex items-center gap-1 bg-emerald-400/10 px-2 py-1 rounded-lg">
+              <TrendingUp size={12} className="text-emerald-400" />
+              <span className="text-emerald-400 text-xs font-bold">+45</span>
             </div>
           </div>
-          <div className="flex items-center gap-1 mt-2">
-            <TrendingUp className="w-4 h-4 text-green-500" />
-            <span className="text-green-600 text-sm font-medium">Direct enrollment</span>
-          </div>
-        </div>
+          <p className="text-3xl font-black text-white mb-1">{stats.totalStudents}</p>
+          <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Paid Students</p>
+        </motion.div>
       </div>
 
-      {/* Recent Rewards */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Enrollments</h3>
-            <span className="text-sm text-gray-600">{recentTransactions.length} sales</span>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Recent Transactions */}
+        <div className="bg-[#0A192F]/60 backdrop-blur-md rounded-3xl p-6 border border-white/5 shadow-xl">
+          <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <ArrowUpRight className="text-emerald-400" /> Recent Earnings
+            </h3>
+            <span className="text-sm font-bold text-[#00E5FF] hover:underline cursor-pointer">View All</span>
           </div>
-        </div>
-        <div className="p-6">
+          
           <div className="space-y-4">
-            {recentTransactions.map((transaction) => (
-              <div key={transaction.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${getTransactionColor(transaction.type)}`}>
-                    {transaction.icon}
+            {recentTransactions.map((tx) => (
+              <div key={tx.id} className="flex justify-between items-center p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-colors group">
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-xl shadow-lg ${tx.type === 'bonus' ? 'bg-yellow-400/20 text-yellow-400' : 'bg-emerald-400/20 text-emerald-400'}`}>
+                    {tx.type === 'bonus' ? <Crown size={20} /> : <DollarSign size={20} />}
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">{transaction.student}</h4>
-                    <p className="text-sm text-gray-600">{transaction.course}</p>
-                    <p className="text-xs text-gray-500">{transaction.date}</p>
+                    <h4 className="font-bold text-white">{tx.student}</h4>
+                    <p className="text-xs text-slate-400">{tx.course}</p>
+                    <p className="text-[10px] font-bold text-slate-500 mt-1">{tx.date}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-green-600 flex items-center gap-1 justify-end">
-                    ₹{transaction.coins}
-                  </p>
-                  <p className="text-xs text-gray-500">{getTransactionLabel(transaction.type)}</p>
+                  <span className="font-black text-lg text-emerald-400">+₹{tx.amount}</span>
                 </div>
               </div>
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Rewards & Milestones */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Revenue Milestones */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Revenue Milestones</h3>
-            <p className="text-gray-600 text-sm mt-1">Unlock professional perks as you reach earning goals</p>
+        {/* Milestones */}
+        <div className="bg-[#0A192F]/60 backdrop-blur-md rounded-3xl p-6 border border-white/5 shadow-xl">
+          <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <Award className="text-yellow-400" /> Revenue Milestones
+            </h3>
           </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {rewardsMilestones.map((milestone, index) => (
-                <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${milestone.achieved ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
-                      }`}>
-                      {milestone.achieved ? <Crown className="w-5 h-5" /> : <Award className="w-5 h-5" />}
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900">{milestone.reward}</h4>
-                      <p className="text-sm text-gray-600">₹{milestone.coins.toLocaleString()} Revenue Goal</p>
-                    </div>
+
+          <div className="space-y-6">
+            {milestones.map((milestone, idx) => (
+              <div key={idx} className="flex gap-4">
+                <div className="relative">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg z-10 relative shadow-lg
+                    ${milestone.achieved ? 'bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-900' : 'bg-slate-800 text-slate-500 border border-white/10'}`}
+                  >
+                    {milestone.achieved ? <CheckCircle2 size={20} /> : <Award size={20} />}
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${milestone.achieved ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                    }`}>
-                    {milestone.achieved ? 'Reached! 🎉' : 'Pending'}
+                  {idx !== milestones.length - 1 && (
+                    <div className={`absolute top-10 bottom-[-24px] left-1/2 -translate-x-1/2 w-[2px] 
+                      ${milestones[idx+1].achieved ? 'bg-emerald-400' : 'bg-slate-800'}`}></div>
+                  )}
+                </div>
+                <div className="flex-1 pb-2">
+                  <div className="flex justify-between items-center mb-1">
+                    <h4 className={`font-bold ${milestone.achieved ? 'text-white' : 'text-slate-400'}`}>{milestone.reward}</h4>
+                    <span className={`text-xs font-bold px-2 py-1 rounded-lg ${milestone.achieved ? 'bg-emerald-400/20 text-emerald-400' : 'bg-slate-800 text-slate-500'}`}>
+                      ₹{milestone.target.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-800 rounded-full h-1.5 mt-3 overflow-hidden">
+                    <div 
+                      className={`h-full bg-gradient-to-r from-emerald-400 to-teal-400`}
+                      style={{ width: milestone.achieved ? '100%' : `${(earningsData.totalRevenue / milestone.target) * 100}%` }}
+                    ></div>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
-        </div>
 
-        {/* Right Column: Breakdown & Goals */}
-        <div className="space-y-6">
-          {/* Revenue Breakdown */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-            <h4 className="font-semibold text-gray-900 mb-4">Revenue Summary</h4>
+          <div className="mt-8 pt-6 border-t border-white/10">
+            <h4 className="font-bold text-white mb-4">Revenue Breakdown</h4>
             <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Course Sales</span>
-                <span className="font-semibold text-green-600">+₹4,250</span>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-400 font-bold">Course Sales</span>
+                <span className="text-emerald-400 font-bold">+₹4,250</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Bonuses</span>
-                <span className="font-semibold text-yellow-600">+₹890</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Referrals</span>
-                <span className="font-semibold text-purple-600">+₹560</span>
-              </div>
-              <div className="flex justify-between items-center pt-3 border-t border-gray-200">
-                <span className="text-sm font-semibold text-gray-900">Withdrawable Balance</span>
-                <span className="font-bold text-green-600 flex items-center gap-1">
-                  <DollarSign className="w-4 h-4" />
-                  ₹{statsData.totalCoins.toLocaleString()}
-                </span>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-400 font-bold">Bonuses</span>
+                <span className="text-yellow-400 font-bold">+₹890</span>
               </div>
             </div>
-          </div>
-
-          {/* Next Goal */}
-          <div className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-xl p-6 text-white">
-            <div className="flex items-center gap-3 mb-3">
-              <Zap className="w-6 h-6" />
-              <h4 className="font-semibold text-lg">Next Goal</h4>
-            </div>
-            <p className="text-yellow-100 mb-2">Earn ₹10,000 to unlock Platinum Rank</p>
-            <div className="w-full bg-yellow-200 rounded-full h-2">
-              <div
-                className="bg-white h-2 rounded-full"
-                style={{ width: `${(statsData.totalCoins / 10000) * 100}%` }}
-              ></div>
-            </div>
-            <p className="text-yellow-100 text-sm mt-2 text-right">
-              ₹{statsData.totalCoins.toLocaleString()} / ₹10,000
-            </p>
           </div>
         </div>
       </div>

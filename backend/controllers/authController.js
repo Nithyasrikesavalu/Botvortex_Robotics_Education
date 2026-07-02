@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import StudentProfile from "../models/StudentProfile.js";
 import Otp from "../models/Otp.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -176,7 +177,8 @@ export const register = async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.userType,
-        fullName: user.fullName
+        fullName: user.fullName,
+        avatar: ""
       }
     });
   } catch (error) {
@@ -328,6 +330,9 @@ export const login = async (req, res) => {
       { expiresIn: "7d" }
     );
 
+    const profile = await StudentProfile.findOne({ userId: user._id });
+    const avatar = profile?.personal?.avatar || "";
+
     res.json({
       message: "Login successful",
       token,
@@ -336,7 +341,8 @@ export const login = async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.userType,
-        fullName: user.fullName
+        fullName: user.fullName,
+        avatar: avatar
       }
     });
   } catch (error) {
