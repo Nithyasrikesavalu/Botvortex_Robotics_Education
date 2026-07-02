@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { API_URL } from "../../config/api";
 
-const OverviewContent = ({ instructor }) => {
+const OverviewContent = ({ instructor, onNavigate }) => {
   if (!instructor) return null;
   const { stats } = instructor;
   const [activeTab, setActiveTab] = useState("insights");
@@ -141,7 +141,10 @@ const OverviewContent = ({ instructor }) => {
               That's <span className="font-bold text-emerald-400">+{Math.floor(stats.totalStudents * 0.12)}</span> new minds ignited in the robotics world!
             </p>
             <div className="flex flex-wrap gap-4 mt-6">
-              <button className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00E5FF] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#00E5FF] text-white px-6 py-3 rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(124,58,237,0.4)]">
+              <button 
+                onClick={() => onNavigate && onNavigate('courses')}
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00E5FF] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#00E5FF] text-white px-6 py-3 rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(124,58,237,0.4)]"
+              >
                 <Plus className="w-5 h-5" />
                 Create New Course
               </button>

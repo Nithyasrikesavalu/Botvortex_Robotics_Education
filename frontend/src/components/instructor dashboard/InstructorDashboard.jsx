@@ -153,7 +153,7 @@ const InstructorDashboard = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'overview':
-        return <OverviewContent instructor={instructor} />;
+        return <OverviewContent instructor={instructor} onNavigate={setActiveTab} />;
       case 'courses':
         return <CreateCourse instructor={instructor} />;
       case 'events':
