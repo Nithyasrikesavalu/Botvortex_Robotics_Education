@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { API_URL } from '../config/api';
-import { Home, LogOut, LayoutDashboard, BookOpen, Award, CheckSquare, Bell, Star, Trophy, Target, Users, Calendar, CreditCard, Settings as SettingsIcon, MessageSquare, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Home, LogOut, LayoutDashboard, BookOpen, Award, CheckSquare, Bell, Star, Trophy, Target, Users, Calendar, CreditCard, Settings as SettingsIcon, MessageSquare, MessageCircle, ChevronLeft, ChevronRight, Menu } from 'lucide-react';
 
 // Import New Components
 import HeroProfile from '../components/StudentDashboard/HeroProfile';
@@ -39,10 +39,23 @@ const Dashboard = () => {
   const [notifications, setNotifications] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
+  const [isMobile, setIsMobile] = useState(false);
   const [user, setUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem('user')) || {}; } 
     catch { return {}; }
   });
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) setIsSidebarOpen(false);
+      else setIsSidebarOpen(true);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem('studentNotifications');
@@ -133,12 +146,23 @@ const Dashboard = () => {
         <div className="absolute top-[40%] right-[40%] w-64 h-64 bg-[#00BFFF]/5 rounded-full blur-[100px]"></div>
       </div>
 
+      {/* Sidebar Overlay for Mobile */}
+      {isMobile && isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <motion.aside 
-        initial={{ width: 280 }}
-        animate={{ width: isSidebarOpen ? 280 : 80 }}
+        initial={{ width: 280, x: -280 }}
+        animate={{ 
+          width: isMobile ? 280 : (isSidebarOpen ? 280 : 80),
+          x: isMobile ? (isSidebarOpen ? 0 : -280) : 0
+        }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="relative z-20 h-screen bg-[#0A192F]/80 backdrop-blur-xl border-r border-white/5 flex flex-col shrink-0"
+        className={`z-40 h-screen bg-[#0A192F]/95 backdrop-blur-xl border-r border-white/5 flex flex-col shrink-0 ${isMobile ? 'fixed top-0 left-0' : 'relative'}`}
       >
         <div className="p-6 flex items-center justify-between border-b border-white/5">
           {isSidebarOpen && (
@@ -162,7 +186,10 @@ const Dashboard = () => {
             {navItems.map((item) => (
               <li key={item.id}>
                 <button
-                  onClick={() => setActiveTab(item.id)}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    if (isMobile) setIsSidebarOpen(false);
+                  }}
                   className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group relative ${
                     activeTab === item.id 
                       ? 'bg-gradient-to-r from-[#00E5FF]/10 to-transparent text-[#00E5FF]' 
@@ -200,10 +227,20 @@ const Dashboard = () => {
       <main className="flex-1 h-screen overflow-y-auto relative z-10 scroll-smooth">
         
         {/* Top Header */}
-        <header className="sticky top-0 z-30 bg-[#060D1A]/80 backdrop-blur-xl border-b border-white/5 px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white capitalize">
-            {navItems.find(i => i.id === activeTab)?.label}
-          </h1>
+        <header className="sticky top-0 z-30 bg-[#060D1A]/80 backdrop-blur-xl border-b border-white/5 px-4 md:px-8 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            {isMobile && (
+              <button 
+                onClick={() => setIsSidebarOpen(true)}
+                className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
+              >
+                <Menu size={20} />
+              </button>
+            )}
+            <h1 className="text-xl md:text-2xl font-bold text-white capitalize truncate max-w-[150px] sm:max-w-xs md:max-w-none">
+              {navItems.find(i => i.id === activeTab)?.label}
+            </h1>
+          </div>
           
           <div className="flex items-center gap-4 relative">
             <button onClick={() => {

@@ -341,7 +341,7 @@ const Syllabus = () => {
         {/* Call to Action */}
         <div className="text-center mt-12">
           <Link to={'/enroll'} className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl font-bold text-lg shadow-lg transform hover:scale-105 transition-all border border-blue-500">
-            Enroll Now - Start Your Robotics Journey
+            Enroll Now
           </Link>
           <p className="text-gray-600 mt-4 text-sm">
             Join 2,500+ students who have transformed their careers with robotics

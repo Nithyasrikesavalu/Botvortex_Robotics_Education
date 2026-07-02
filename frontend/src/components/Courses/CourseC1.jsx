@@ -5,7 +5,6 @@ import { Link, Links } from "react-router-dom";
 const CourseC1 = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [openModule, setOpenModule] = useState(null);
-  const [selectedVideo, setSelectedVideo] = useState(null);
    
 
    // Scroll to top on component mount
@@ -15,7 +14,7 @@ const CourseC1 = () => {
       left: 0,
     });
   }, []);
-  const TABS = ["overview", "curriculum", "instructor", "reviews", "resources"];
+  const TABS = ["overview", "curriculum", "instructor", "reviews"];
 
   const MODULES = [
     {
@@ -52,50 +51,7 @@ const CourseC1 = () => {
     },
   ];
 
-  const RESOURCES = [
-    {
-      title: "Robotics Beginner Guide",
-      type: "PDF",
-      link: "#",
-      description: "Complete introduction for absolute beginners.",
-      size: "2.4 MB"
-    },
-    {
-      title: "Sensors & Components Handbook",
-      type: "PDF",
-      link: "#",
-      description: "Detailed explanation of robotic hardware parts.",
-      size: "3.1 MB"
-    },
-    {
-      title: "Programming Robots — Starter Kit",
-      type: "PDF",
-      link: "#",
-      description: "Coding basics for robotic systems.",
-      size: "1.8 MB"
-    },
-  ];
 
-  const VIDEOS = [
-    {
-      title: "Introduction to Robotics",
-      url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-      thumbnail: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400",
-      duration: "15:30"
-    },
-    {
-      title: "Understanding Sensors & Motors",
-      url: "https://www.youtube.com/embed/6F1B_Mz1mPc",
-      thumbnail: "https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=400",
-      duration: "22:15"
-    },
-    {
-      title: "Programming Robots — Tutorial",
-      url: "https://www.youtube.com/embed/OhCzThE21-M",
-      thumbnail: "https://images.unsplash.com/photo-1581093057305-25a0a5b9a0aa?w=400",
-      duration: "18:45"
-    },
-  ];
 
   const handleModuleToggle = (id) => {
     setOpenModule(openModule === id ? null : id);
@@ -591,102 +547,7 @@ const CourseC1 = () => {
           </div>
         )}
 
-        {/* RESOURCES - White with Dark Blue */}
-        {activeTab === "resources" && (
-          <div className="bg-white p-8 rounded-xl shadow-sm mt-6 border border-gray-300">
-            <h2 className="text-2xl font-bold mb-8 text-gray-900">Learning Resources</h2>
-
-            {/* PDF Section */}
-            <div className="mb-12">
-              <h3 className="text-xl font-semibold mb-6 text-gray-900">Documentation & Guides</h3>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {RESOURCES.map((resource, index) => (
-                  <div
-                    key={index}
-                    className="bg-white border border-gray-300 rounded-lg p-6 hover:border-blue-400 hover:shadow-md transition-all group"
-                  >
-                    <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold w-fit mb-4 border border-blue-200">
-                      {resource.type}
-                    </div>
-                    <h4 className="font-semibold text-lg mb-3 text-gray-900 group-hover:text-blue-600 transition-colors">
-                      {resource.title}
-                    </h4>
-                    <p className="text-gray-600 text-sm mb-6 leading-relaxed">{resource.description}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">{resource.size}</span>
-                      <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                        <Download className="w-4 h-4" />
-                        Download
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* VIDEO Section */}
-            <div>
-              <h3 className="text-xl font-semibold mb-6 text-gray-900">Video Lectures</h3>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {VIDEOS.map((video, index) => (
-                  <div
-                    key={index}
-                    onClick={() => setSelectedVideo(video)}
-                    className="cursor-pointer bg-white border border-gray-300 rounded-lg hover:border-blue-400 hover:shadow-md transition-all duration-300 p-4 group"
-                  >
-                    <div className="relative rounded-lg overflow-hidden mb-4">
-                      <img
-                        src={video.thumbnail}
-                        alt={video.title}
-                        className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg flex items-center justify-center">
-                        <div className="bg-white rounded-full w-12 h-12 flex items-center justify-center transform group-hover:scale-110 transition-transform shadow-lg border border-gray-200">
-                          <Play className="w-5 h-5 text-blue-600 ml-0.5" />
-                        </div>
-                      </div>
-                      <div className="absolute bottom-3 right-3 bg-blue-600 text-white px-2 py-1 rounded text-sm">
-                        {video.duration}
-                      </div>
-                    </div>
-                    <p className="font-semibold text-gray-900 text-center group-hover:text-blue-600 transition-colors">
-                      {video.title}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
-
-      {/* VIDEO MODAL */}
-      {selectedVideo && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl max-w-4xl w-full p-6 relative shadow-2xl border border-gray-300">
-            <button
-              onClick={() => setSelectedVideo(null)}
-              className="absolute -top-3 -right-3 bg-blue-600 text-white h-8 w-8 flex items-center justify-center rounded-full hover:bg-blue-700 transition-colors z-10 shadow-lg"
-            >
-              ✕
-            </button>
-            
-            <div className="aspect-video w-full rounded-lg overflow-hidden bg-gray-900">
-              <iframe
-                src={selectedVideo.url}
-                className="w-full h-full"
-                allowFullScreen
-                title={selectedVideo.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              />
-            </div>
-
-            <p className="text-lg font-semibold mt-4 p-2 text-gray-900">
-              {selectedVideo.title}
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* FOOTER */}
       <footer className="text-center py-12 text-gray-600 mt-16 bg-white border-t border-gray-300">
