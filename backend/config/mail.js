@@ -6,7 +6,9 @@ console.log("📧 Email Config - User:", process.env.EMAIL_USER ? "Present" : "M
 console.log("📧 Email Config - Pass:", process.env.EMAIL_PASS ? "Present" : "MISSING");
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
