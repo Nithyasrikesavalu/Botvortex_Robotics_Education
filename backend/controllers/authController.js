@@ -62,7 +62,11 @@ export const sendOtp = async (req, res) => {
         console.log("📧 Mail sent successfully to:", identifier);
       } catch (mailError) {
         console.error("❌ Mail sending failed:", mailError);
-        return res.status(500).json({ message: "Failed to send OTP email. Please try again." });
+        return res.status(500).json({ 
+          message: "Failed to send OTP email.", 
+          error: mailError.message,
+          hint: "If you are on Render, please ensure EMAIL_USER and EMAIL_PASS are set in Environment Variables."
+        });
       }
     } else {
       // Mock SMS
